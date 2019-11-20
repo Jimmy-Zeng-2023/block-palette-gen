@@ -33,8 +33,9 @@ class TextureReader(object):
             # We dont want McMeta files (yet), those are for animated textures
             if(extension == 'png'):
                 texture = Image.open(path)
-                colors = "green" #self.getPrimaryColors(texture)
-                noise = 2 #self.getNoise(texture, colors)
+                print(f"loading {name}...")
+                colors, noise = self.getColorsAndNoise(texture)
+
                 #return {name : Block(name, colors, noise, texture)}
                 return [Block(name, colors, noise, texture)]
             else:
@@ -56,11 +57,12 @@ class TextureReader(object):
         # If RGB are within 100, combine the counts
         # return the final colors that still are there
 
-        textureColors = texture.getcolors()
-        noise = getNoise(textureColors)
-        sortedTextureColors = self.mergeSortByCount(textureColors)
+        colorLst = texture.getcolors() # Gets a list of all the colors
+        noise = self.getNoise(colorLst)
+        color = self.getPrimaryColor(colorLst)
+        return color, noise
         
-    ## Following from Class Notes: Recursion Part 1
+    '''## Following from Class Notes: Recursion Part 1
     def merge(A, B):
         # iterative (ugh) and destructive (double ugh), but practical...
         C = [ ]
@@ -84,9 +86,31 @@ class TextureReader(object):
             mid = len(colors)//2
             left = mergeSort(colors[:mid])
             right = mergeSort(colors[mid:])
-            return merge(left, right)
+            return merge(left, right)'''
 
-    def getNoise(self, colors):
+    def getPrimaryColor(self, colorLst):
+        return self.getMode(colorLst)
+    
+    def getMode(self, colorLst):
+        if(colorLst == None):
+            return None
+        
+        highestCount = 0
+        mostFreqColor = None
+        for (count, color) in colorLst:
+            if(not isinstance(color, tuple)):
+                pass
+            elif((len(color) == 4) and (color[3] == 0)): # Alpha value of 0 means transparent, so ignore
+                pass
+            elif(count > highestCount):
+                highestCount = count
+                mostFreqColor = color
+        return mostFreqColor
+
+    def getNoise(self, colorLst):
         # Noise is defined by how many total colors there are in a texture
         # (For now)
-        return len(colors)
+        if(colorLst == None):
+            return 0
+        else:
+            return len(colorLst)
