@@ -26,6 +26,7 @@ def unusedFunction():
     # Data structure #2: List of block objects
     # name                 colors                noise index
     Block('acacia-planks', (Red1, Orange1, Red2), 1)
+    # USING THIS ONE RN
 
     # Data structure #3: Dict of block objects indexed by names
     { 'acacia-planks' : Block(etc) }
@@ -78,8 +79,7 @@ class TextureReader(object):
                 blocks += subBlocks
             return blocks
 
-    def getPrimaryColors(self, texture):
-        return texture.getcolors()
+    def getColorsAndNoise(self, texture):
         #Given the path, open the image via PIL and derive the block's main colors
         #(colors too close together are ignored)
 
@@ -88,9 +88,40 @@ class TextureReader(object):
         # If RGB are within 100, combine the counts
         # return the final colors that still are there
 
-    def getNoise(self, texture, colors): return 4
+        textureColors = texture.getcolors()
+        noise = getNoise(textureColors)
+        sortedTextureColors = self.mergeSortByCount(textureColors)
+        
+    ## Following from Class Notes: Recursion Part 1
+    def merge(A, B):
+        # iterative (ugh) and destructive (double ugh), but practical...
+        C = [ ]
+        i = j = 0
+        while ((i < len(A)) or (j < len(B))):
+            # Need to compare only the count part of the element
+            # (count (RGBA))
+            if ((j == len(B)) or ((i < len(A)) and (A[i][0] <= B[j][0]))):
+                C.append(A[i])
+                i += 1
+            else:
+                C.append(B[j])
+                j += 1
+        return C
+
+    def mergeSortByCount(colors):
+        if (len(colors) < 2):
+            return L
+        else:
+            # No need for complicated loops- just merge sort each half, then merge!
+            mid = len(colors)//2
+            left = mergeSort(colors[:mid])
+            right = mergeSort(colors[mid:])
+            return merge(left, right)
+
+    def getNoise(self, colors):
         # Noise is defined by how many total colors there are in a texture
         # (For now)
+        return len(colors)
 
 class BlockGenerator(object):
     # This function is responsible for generating the blocks
