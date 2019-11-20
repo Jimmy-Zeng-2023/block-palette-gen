@@ -17,7 +17,10 @@ from Block import *
 from TextureReader import *
 from BlockGenerator import *
 
-# This app just displays all the textures loaded
+#################################################
+# The TextureDisplayApp shows an overview of all the textures loaded.
+# Press left and right to navigate.
+#################################################
 class TextureDisplayApp(App):
     def appStarted(self):
         path = "Block-textures-vanilla-1.14.4"

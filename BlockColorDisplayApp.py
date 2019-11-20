@@ -1,21 +1,37 @@
+#################################################
+# 15-112 Term Project: Minecraft Block Palette Generator by Jimmy Zeng
+
+# Inspired by online color palette generators like Colormind.io, this project
+# aims to generate a list of minecraft blocks that work well with each other in
+# any build based on their textures and colors.
+#
+# Your name: Jimmy Zeng
+# Your andrew id: jimmyzen
+#################################################
+
 from cmu_112_graphics import *
 from tkinter import *
 from PIL import Image
-import random, math, copy, string, time, os
 from Block import *
 from TextureDisplayApp import *
+import random, math, copy, string, time, os
 
+## From Class Notes: Graphics Part 2
 def rgbString(red, green, blue):
     # Don't worry about how this code works yet.
     return "#%02x%02x%02x" % (red, green, blue)
 
+#################################################
+# The ColorDisplayApp allows one to go through each block in the loaded
+# Texturepack and view their colors and noise. Press left and right to navigate.
+#################################################
 class ColorDisplayApp(App):
     def appStarted(self):
         path = "Block-textures-vanilla-1.14.4"
         self.reader = TextureReader(3, path)
         self.blocks = self.reader.parseFiles(path)
         print("Loading Complete!")
-        self.i = 20
+        self.i = 16
         self.printBlockNames = True
         self.printColorDetails = False
         self.unwantedBlocks = []
@@ -85,7 +101,7 @@ class ColorDisplayApp(App):
         canvas.create_rectangle(600, 400, 660, 460,
                                 fill = modeColorStr)
         canvas.create_text(600, 460, anchor = 'nw', 
-                            text = f"Noise Factor = {self.blocks[self.i].noise}",
-                            font = "Helvetica 20 bold")
+                           text = f"Noise Factor = {self.blocks[self.i].noise}",
+                           font = "Helvetica 20 bold")
 
 myApp = ColorDisplayApp(width = 1000, height = 600)

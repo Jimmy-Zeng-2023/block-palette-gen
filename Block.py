@@ -14,8 +14,11 @@ from tkinter import *
 from PIL import Image
 import random, math, copy, string, time, os
 
+#################################################
+# The Block class represents a Minecraft block.
+# Its purpose is mainly to serve as a data structure.
+#################################################
 class Block(object):
-    # Represents a block
     def __init__(self, name, colors, noise, textures):
         self.name = name
         self.colors = colors # Color is a set of the most prominant colors

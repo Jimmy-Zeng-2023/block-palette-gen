@@ -14,34 +14,45 @@ from Block import *
 import random, math, copy, string, time, os
 
 # TODO: Switch to dict based data structure
-# TODO: Generate a blacklist for random blocks not needed
 
 ## From Class Notes: Strings, Basic File I/O
 def readFile(path):
     with open(path, "rt") as f:
         return f.read()
 
+#################################################
+# The TextureReader takes in the raw textures, derive their colors and noise
+# factors, and organizes them for the rest of the classes.
+#################################################
 class TextureReader(object):
     def __init__(self, epsilon, path):
         # Initializes the error epsilon, and texture pack's path
         self.epsilon = epsilon
         self.path = path
-        #self.blacklistPath = ""
-        #self.blackList = readFile(blackListPath)
+        self.blacklistPath = "blacklist.txt"
+        self.getBlackList()
+
+    def getBlackList(self):
+        self.blacklist = set()
+        blacklistStr = readFile(self.blacklistPath)
+        for name in blacklistStr.splitlines():
+            self.blacklist.add(name)
 
     def parseFiles(self, path):
         #blocks = dict()
         blocks = []
-        #Follow the format in class, base case -> finds a png file
-        #Files are stored as a dictionary indexed by name of the blocks, holding Block objects
+        # Follow the format in class, base case -> finds a png file
+        # Files are currently stored as a list of Block objects,
+        # in the future I will emigrate to a dictionary structure
 
         if(os.path.isfile(path)):
             (head, fileName) = os.path.split(path)
             splitFileName = fileName.split('.')
             name = splitFileName[0]
             extension = splitFileName[-1]
-            # We dont want McMeta files (yet), those are for animated textures
-            if(extension == 'png'):
+            # We dont want .mcMeta files (yet), those are for animated textures
+            if(extension == 'png' and 
+               name not in self.blacklist):
                 texture = Image.open(path)
                 #print(f"loading {name}...")
                 colors, noise = self.getColorsAndNoise(texture)

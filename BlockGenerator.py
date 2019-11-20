@@ -16,7 +16,10 @@ import random, math, copy, string, time, os
 from Block import *
 from TextureReader import *
 
-
+#################################################
+# The BlockGenerator (TBD) will generate matching blocks when provided with
+# a base block. This is the key to the palette generator.
+#################################################
 class BlockGenerator(object):
     # This function is responsible for generating the blocks
     def __init__(self, blocks):
