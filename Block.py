@@ -9,6 +9,8 @@
 # Your andrew id: jimmyzen
 #################################################
 
+from cmu_112_graphics import *
+from tkinter import *
 from PIL import Image
 import random, math, copy, string, time, os
 
@@ -18,7 +20,7 @@ class Block(object):
         self.name = name
         self.colors = colors # Color is a set of the most prominant colors
         self.noise = noise # Noise is a number 1-10 that classifies the level of noise
-        self.textures = textures # Texture is a set of image objects relating to the faces
+        self.textures = textures # Texture is a list of image objects relating to the faces
 
     def __repr__(self):
         if(len(self.colors) > 3):
@@ -26,5 +28,16 @@ class Block(object):
         else:
             return f"{self.name} block. Noise factor = {self.noise}.\n Colors = {self.colors}."
 
-    def __eq__(self, other): pass
-    def __hash__(self): pass
+    def __eq__(self, other):
+        return (isinstance(other, Block) and
+                self.name == other.name)
+
+    def __hash__(self):
+        hashables = (self.name, self.colors, self.noise)
+        return hash(hashables)
+
+    def draw(self, app, canvas, x, y, scale):
+        #Advanced: want to draw in 3D w/ 3 images
+
+        texture = app.scaleImage(self.textures, scale)
+        canvas.create_image(x, y, image = ImageTk.PhotoImage(texture))

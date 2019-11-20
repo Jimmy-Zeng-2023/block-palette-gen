@@ -15,27 +15,43 @@ class ColorDisplayApp(App):
         self.reader = TextureReader(3, path)
         self.blocks = self.reader.parseFiles(path)
         print("Loading Complete!")
-        self.i = 500
+        self.i = 20
+        self.printBlockNames = True
+        self.printColorDetails = False
+        self.unwantedBlocks = []
         self.changeTexture()
-        self.timerDelay = 2
     
     def changeTexture(self):
         self.currentTexture = self.blocks[self.i].textures
         self.colors = self.currentTexture.getcolors(maxcolors = 10**6)
-        #print(self.colors)
-        print()
-        print(self.blocks[self.i].name, ", i =", self.i)
-        for (count, color) in self.colors:
-            print(f"{color} with count {count}")
+        
+        if(self.printBlockNames):
+            print()
+            print(self.blocks[self.i].name, ", i =", self.i)
+        if(self.printColorDetails):
+            for (count, color) in self.colors:
+                print(f"{color} with count {count}")
         self.currentTexture = self.scaleImage(self.currentTexture, 20)
 
     def keyPressed(self, event):
-        if(event.key == 'Right'):
+        if(event.key == 'Right' and self.i < 607):
             self.i += 1
             self.changeTexture()
         elif(event.key == "Left" and self.i > 0):
             self.i -= 1
             self.changeTexture()
+        elif(event.key == "f"):
+            name = self.blocks[self.i].name
+            print(f"{name} blacklisted!")
+            self.unwantedBlocks.append(name)
+        elif(event.key == "k"):
+            print("Blacklist Undoed!")
+            self.unwantedBlocks.pop()
+        elif(event.key == "r"):
+            print("=======================================")
+            print("Here's the list of blacklisted blocks:")
+            for name in self.unwantedBlocks:
+                print(name) 
 
     def redrawAll(self, canvas):
         canvas.create_image(0,0, image =  ImageTk.PhotoImage(self.currentTexture), anchor = 'nw')
@@ -49,7 +65,7 @@ class ColorDisplayApp(App):
             # Slime blocks (504)
             # These have a color in format of [(2, 4), (1, 3), etc.]
 
-            if(not isinstance(thisColor, tuple)):
+            if(not isinstance(thisColor, tuple) or len(thisColor) <= 2):
                 print("Error: encountered not a tuple")
                 continue
             
@@ -61,13 +77,15 @@ class ColorDisplayApp(App):
                 x += 30
 
         modeColor = self.blocks[self.i].colors
-        if(not isinstance(modeColor, tuple)):
-            print("Error: encountered not a tuple")
-            modeColorStr = "White"
+        if(not isinstance(modeColor, tuple) or len(modeColor) <= 2):
+            modeColorStr = "green2"
         else:
             modeColorStr = rgbString(modeColor[0], modeColor[1], modeColor[2])
         
         canvas.create_rectangle(600, 400, 660, 460,
                                 fill = modeColorStr)
+        canvas.create_text(600, 460, anchor = 'nw', 
+                            text = f"Noise Factor = {self.blocks[self.i].noise}",
+                            font = "Helvetica 20 bold")
 
-myApp = ColorDisplayApp(width = 800, height = 500)
+myApp = ColorDisplayApp(width = 1000, height = 600)

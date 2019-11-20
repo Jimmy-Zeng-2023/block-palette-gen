@@ -13,11 +13,21 @@ from PIL import Image
 from Block import *
 import random, math, copy, string, time, os
 
+# TODO: Switch to dict based data structure
+# TODO: Generate a blacklist for random blocks not needed
+
+## From Class Notes: Strings, Basic File I/O
+def readFile(path):
+    with open(path, "rt") as f:
+        return f.read()
+
 class TextureReader(object):
     def __init__(self, epsilon, path):
         # Initializes the error epsilon, and texture pack's path
         self.epsilon = epsilon
         self.path = path
+        #self.blacklistPath = ""
+        #self.blackList = readFile(blackListPath)
 
     def parseFiles(self, path):
         #blocks = dict()
@@ -33,7 +43,7 @@ class TextureReader(object):
             # We dont want McMeta files (yet), those are for animated textures
             if(extension == 'png'):
                 texture = Image.open(path)
-                print(f"loading {name}...")
+                #print(f"loading {name}...")
                 colors, noise = self.getColorsAndNoise(texture)
 
                 #return {name : Block(name, colors, noise, texture)}
