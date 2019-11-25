@@ -13,7 +13,7 @@ from cmu_112_graphics import *
 from tkinter import *
 from PIL import Image
 from Block import *
-from TextureDisplayApp import *
+from TextureReader import *
 import random, math, copy, string, time, os
 
 ## From Class Notes: Graphics Part 2
@@ -28,10 +28,10 @@ def rgbString(red, green, blue):
 class ColorDisplayApp(App):
     def appStarted(self):
         path = "Block-textures-vanilla-1.14.4"
-        self.reader = TextureReader(3, path)
+        self.reader = TextureReader(50, path)
         self.blocks = self.reader.parseFiles(path)
         print("Loading Complete!")
-        self.i = 16
+        self.i = 0
         self.printBlockNames = True
         self.printColorDetails = False
         self.unwantedBlocks = []
@@ -44,13 +44,15 @@ class ColorDisplayApp(App):
         if(self.printBlockNames):
             print()
             print(self.blocks[self.i].name, ", i =", self.i)
+
         if(self.printColorDetails):
             for (count, color) in self.colors:
                 print(f"{color} with count {count}")
+
         self.currentTexture = self.scaleImage(self.currentTexture, 20)
 
     def keyPressed(self, event):
-        if(event.key == 'Right' and self.i < 607):
+        if(event.key == 'Right' and self.i < len(self.blocks) - 1):
             self.i += 1
             self.changeTexture()
         elif(event.key == "Left" and self.i > 0):
@@ -72,9 +74,17 @@ class ColorDisplayApp(App):
     def redrawAll(self, canvas):
         canvas.create_image(0,0, image =  ImageTk.PhotoImage(self.currentTexture), anchor = 'nw')
 
+        if(not isinstance(self.colors[0][1], tuple)):
+            print("Error: not a tuple")
+            print(self.colors)
+            return
+        elif(len(self.colors[0][1]) < 2):
+            print("Error: tuple too short")
+            return
+
         x, y, s = 600, 0, 30
         for i in range(len(self.colors)):
-            thisColor = self.colors[i][1]
+            thisColor = self.colors[i][1] # (count, colors)
             # Blocks that breaks it: Melons and pumpkin stems (i = 14 and i = 439)
             # Redstone blocks? (i = 459)
             # Default shulker boxes (503)
@@ -100,8 +110,12 @@ class ColorDisplayApp(App):
         
         canvas.create_rectangle(600, 400, 660, 460,
                                 fill = modeColorStr)
-        canvas.create_text(600, 460, anchor = 'nw', 
-                           text = f"Noise Factor = {self.blocks[self.i].noise}",
-                           font = "Helvetica 20 bold")
+        block = self.blocks[self.i]
+        canvas.create_text(600, 470, anchor = 'nw', 
+                           text = f"Noise Factor = {block.noise}\n" +
+                                  f"Colors = {block.colors}\n" +
+                                  f"{block.name}\n" +
+                                  f"i = {self.i}",
+                           font = "Arial 14")
 
 myApp = ColorDisplayApp(width = 1000, height = 600)

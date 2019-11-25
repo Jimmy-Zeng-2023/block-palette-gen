@@ -15,7 +15,6 @@ from PIL import Image
 import random, math, copy, string, time, os
 from Block import *
 from TextureReader import *
-from BlockGenerator import *
 
 #################################################
 # The TextureDisplayApp shows an overview of all the textures loaded.

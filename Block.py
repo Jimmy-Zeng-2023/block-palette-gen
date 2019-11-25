@@ -22,6 +22,7 @@ class Block(object):
     def __init__(self, name, colors, noise, textures):
         self.name = name
         self.colors = colors # Color is a set of the most prominant colors
+                             # Each color is a tuple of (R, G, B) or (R, G, B, A)
         self.noise = noise # Noise is a number 1-10 that classifies the level of noise
         self.textures = textures # Texture is a list of image objects relating to the faces
 
@@ -29,7 +30,7 @@ class Block(object):
         if(len(self.colors) > 3):
             return f"{self.name} block. Noise factor = {self.noise}.\n Colors = {self.colors[:3]} and {len(self.colors) - 3} more..."
         else:
-            return f"{self.name} block. Noise factor = {self.noise}.\n Colors = {self.colors}."
+            return f"{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
 
     def __eq__(self, other):
         return (isinstance(other, Block) and

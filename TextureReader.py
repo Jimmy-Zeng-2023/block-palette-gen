@@ -11,6 +11,7 @@
 
 from PIL import Image
 from Block import *
+from operator import itemgetter # Itemgetter class
 import random, math, copy, string, time, os
 
 # TODO: Switch to dict based data structure
@@ -25,9 +26,9 @@ def readFile(path):
 # factors, and organizes them for the rest of the classes.
 #################################################
 class TextureReader(object):
-    def __init__(self, epsilon, path):
+    def __init__(self, colorEpsilon, path):
         # Initializes the error epsilon, and texture pack's path
-        self.epsilon = epsilon
+        self.colorEpsilon = colorEpsilon
         self.path = path
         self.blacklistPath = "blacklist.txt"
         self.getBlackList()
@@ -51,10 +52,10 @@ class TextureReader(object):
             name = splitFileName[0]
             extension = splitFileName[-1]
             # We dont want .mcMeta files (yet), those are for animated textures
-            if(extension == 'png' and 
-               name not in self.blacklist):
-                texture = Image.open(path)
-                #print(f"loading {name}...")
+            if(extension == 'png' and name not in self.blacklist):
+                texture = Image.open(path).convert("RGBA")
+                sideLength = texture.width
+                texture = texture.crop((0, 0, sideLength, sideLength))
                 colors, noise = self.getColorsAndNoise(texture)
 
                 #return {name : Block(name, colors, noise, texture)}
@@ -73,60 +74,43 @@ class TextureReader(object):
         #Given the path, open the image via PIL and derive the block's main colors
         #(colors too close together are ignored)
 
-        # First find the colors w the highest counts
-        # go down the ordered list and add to dict
-        # If RGB are within 100, combine the counts
-        # return the final colors that still are there
-
         colorLst = texture.getcolors() # Gets a list of all the colors
         noise = self.getNoise(colorLst)
         color = self.getPrimaryColor(colorLst)
         return color, noise
         
-    '''## Following from Class Notes: Recursion Part 1
-    def merge(A, B):
-        # iterative (ugh) and destructive (double ugh), but practical...
-        C = [ ]
-        i = j = 0
-        while ((i < len(A)) or (j < len(B))):
-            # Need to compare only the count part of the element
-            # (count (RGBA))
-            if ((j == len(B)) or ((i < len(A)) and (A[i][0] <= B[j][0]))):
-                C.append(A[i])
-                i += 1
-            else:
-                C.append(B[j])
-                j += 1
-        return C
-
-    def mergeSortByCount(colors):
-        if (len(colors) < 2):
-            return L
-        else:
-            # No need for complicated loops- just merge sort each half, then merge!
-            mid = len(colors)//2
-            left = mergeSort(colors[:mid])
-            right = mergeSort(colors[mid:])
-            return merge(left, right)'''
 
     def getPrimaryColor(self, colorLst):
-        return self.getMode(colorLst)
-    
-    def getMode(self, colorLst):
-        if(colorLst == None):
-            return None
+        # Sorts the list of tuples by only the count element
+        sortedColorLst = sorted(colorLst, key = itemgetter(0))
+        mergedColors = dict()
+        # Reverse loops through the list (greatest to least) and combine colors too close (based on the epsilon)
+        for i in range(len(sortedColorLst)-1, 0, -1):
+            count = sortedColorLst[i][0]
+            color = sortedColorLst[i][1]
+            for key in mergedColors:
+                dR = abs(key[0] - color[0])
+                dG = abs(key[1] - color[1])
+                dB = abs(key[2] - color[2])
+                dColor = dR + dG + dB
+                if(dColor < self.colorEpsilon):
+                    mergedColors[key] += count
+            mergedColors[color] = count
         
-        highestCount = 0
-        mostFreqColor = None
-        for (count, color) in colorLst:
-            if(not isinstance(color, tuple)):
-                pass
-            elif((len(color) == 4) and (color[3] == 0)): # Alpha value of 0 means transparent, so ignore
-                pass
-            elif(count > highestCount):
-                highestCount = count
-                mostFreqColor = color
-        return mostFreqColor
+        # Then, check the color with the greatest number of combined counts
+        return self.getMode(mergedColors)
+    
+    def getMode(self, mergedColors):
+        highest = 0
+        highestColor = None 
+        for key in mergedColors:
+            if(key[0] == 0 or key[3] == 0): # Either RGB with completely black (from being converted from RBGA)
+                                            # Or RGBA with 0 alpha (transparent)
+               pass
+            elif(mergedColors[key] > highest):
+                highest = mergedColors[key]
+                highestColor = key
+        return highestColor
 
     def getNoise(self, colorLst):
         # Noise is defined by how many total colors there are in a texture
