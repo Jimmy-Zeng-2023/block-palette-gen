@@ -30,7 +30,10 @@ class Block(object):
         if(len(self.colors) > 3):
             return f"{self.name} block. Noise factor = {self.noise}.\n Colors = {self.colors[:3]} and {len(self.colors) - 3} more..."
         else:
-            return f"{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
+            return f"\n{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
+
+    def __str__(self):
+        return f"{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
 
     def __eq__(self, other):
         return (isinstance(other, Block) and

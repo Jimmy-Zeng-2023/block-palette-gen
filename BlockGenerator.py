@@ -47,39 +47,106 @@ class BlockGenerator(object):
     def __init__(self, blocks, noiseEpsilon = 10):
         self.blocks = blocks
         self.noiseEpsilon = noiseEpsilon
+        self.placeholder = Block("placeholder",
+                                  (0, 0, 0),
+                                  0,
+                                  Image.new("RGBA", (1, 1)))
 
     # Generates a new State 
     def generate(self, state):
-        toGen = []
+        newBlocks = []
+        nToGen = 0
         locked = state.locked
         for i in range(5):
             if(i in locked):
-                toGen.append(state.blocks[i])
+                newBlocks.append(state.blocks[i])
+            else:
+                newBlocks.append(self.placeholder)
+                nToGen += 1
 
-        if(len(toGen) == 0):
-            toGen.append(self.generateRandomBlock(state, toGen))
-        while(len(toGen) < 5):
-            toGen.append(self.generateBlock(state, toGen))
-        return State(toGen, locked)
-        print(state)
+        # If there were no locked values, add a random one to start
+        if(len(locked) == 0):
+            newBlocks[0] = self.generateRandomBlock(state, newBlocks)
+            nToGen -= 1
 
-    def generateRandomBlock(self, state, toGen):
+        if(nToGen != 0):
+            generatedBlocks = self.generateFromBlocks(newBlocks, nToGen, state)
+
+        for i in range(len(newBlocks)):
+            if(newBlocks[i] == self.placeholder):
+                block = generatedBlocks[0]
+                newBlocks[i] = block
+                generatedBlocks.pop(0)
+        
+        
+        result = State(newBlocks, locked)
+        print(result)
+        return result
+
+    def generateRandomBlock(self, state, newBlocks):
         randColor = [random.randint(1,255) for _ in range(3)]
         randNoise = random.randint(1,40)
-        return self.findBlockFromColor(state, toGen, randColor, randNoise)
+        return self.findBlockFromColor(state, newBlocks, randColor, randNoise)
 
-    def generateBlock(self, state, toGen):
-        color = toGen[-1].colors
-        noise = toGen[-1].noise
-        analogous = self.findAnalogous(color)
-        block = self.findBlockFromColor(state, toGen, analogous, noise)
-        return block
+    def generateFromBlocks(self, newBlocks, nToGen, state):
+        # Average the colors from newBlocks in a 3-tuple
+        average = self.averageColors(newBlocks)
+        complement = self.findComplementary(average)
+        noise = self.averageNoise(newBlocks)
 
+        dR = complement[0] - average[0] + random.randint(-40, 40)
+        dG = complement[1] - average[1] + random.randint(-40, 40)
+        dB = complement[2] - average[2] + random.randint(-40, 40)
+
+        '''print(f"Average Col was {average}\n",
+              f"Complement was {complement}\n",
+              f"dR = {dR}, dG = {dG}, dB = {dB}\n")'''
+               
+        stepR = dR // nToGen
+        stepG = dG // nToGen
+        stepB = dB // nToGen
+
+        generatedBlocks = []
+        blocksToCheck = copy.copy(newBlocks)
+        for i in range(nToGen):
+            color = (stepR * i + average[0] + random.randint(-20, 20),
+                     stepG * i + average[1] + random.randint(-20, 20),
+                     stepB * i + average[2] + random.randint(-20, 20))
+            block = self.findBlockFromColor(state, blocksToCheck, color, noise)
+            generatedBlocks.append(block)
+            blocksToCheck.append(block)
+        return generatedBlocks
+
+    # Returns the averages of the colors
+    def averageColors(self, blocks):
+        (totalR, totalG, totalB) = (0, 0, 0)
+        n = 0
+        for block in blocks:
+            if(block == self.placeholder): continue
+
+            (R, G, B) = block.colors[0:3]
+            totalR += R
+            totalG += G
+            totalB += B
+            n += 1
+        totalR //= n
+        totalG //= n
+        totalB //= n
+        return (totalR, totalG, totalB)
+
+    # Returns the average noise
+    def averageNoise(self, blocks):
+        totalNoise = 0
+        n = 0
+        for block in blocks:
+            if(block == self.placeholder): continue
+            totalNoise += block.noise
+            n += 1
+        return totalNoise // n
+        
     # Find the complement
     def findComplementary(self, color):
-        red = color[0]
-        green = color[1]
-        blue = color[2]
+        (red, green, blue) = color
         return (255 - red, 255 - green, 255 - blue)
        
     # Finds 2 analogous colors (maybe)
@@ -108,7 +175,7 @@ class BlockGenerator(object):
     def findTriadics(self): pass
 
     # Given a color and a noise, finds the block closest to that color within acceptable noise
-    def findBlockFromColor(self, state, toGen, color, noise):
+    def findBlockFromColor(self, state, newBlocks, color, noise):
         lowest = 255*3
         lowestBlock = self.blocks[0]
         for block in self.blocks:
@@ -117,7 +184,7 @@ class BlockGenerator(object):
             dB = abs(color[2] - block.colors[2])
             dColor = dR + dG + dB
             dNoise = abs(block.noise - noise)
-            if(block not in toGen and
+            if(block not in newBlocks and
                block not in state.blocks and
                dColor < lowest and
                dNoise < self.noiseEpsilon):
