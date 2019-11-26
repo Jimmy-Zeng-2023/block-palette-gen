@@ -65,9 +65,7 @@ class ImageButton(Button):
         super().__init__(x, y, width, height, action, None)
         # Active is image displayed when moused over
         # sprites holds both the regular and the active image
-        image, active = sprites
-        self.image = image.resize((32, 32))
-        self.active = active.resize((32, 32))
+        self.image, self.active = sprites
 
     def draw(self, canvas):
         canvas.create_image(self.x, self.y,
@@ -78,25 +76,18 @@ class ImageButton(Button):
 class LockableButton(ImageButton):
     def __init__(self, x, y, width, height, action, lockSprites, unlockSprite):
         self.lockSprites = lockSprites
-        self.unlockSprites = unlockSprite
-        image, active = self.lockSprites
+        self.unlockSprite = unlockSprite
         self.isLocked = False # If locked, the unlock button should appear.
                               # Else, the lock button should appear
-        self.lockedColor = "deep sky blue" # the button glows this color when locked
 
         super().__init__(x, y, width, height, action, self.lockSprites)
     
     def lock(self):
         self.isLocked = not self.isLocked
-        (self.image, self.active) = self.unlockSprite # The unlock button is always shaded in
-
-    def draw(self, canvas):
         if(self.isLocked):
-            canvas.create_oval(self.x, self.y,
-                               self.x + self.width, self.y + self.height,
-                               width = 0,
-                               fill = self.lockedColor)
-        super().draw(canvas)
+            (self.image, self.active) = self.unlockSprite
+        else:
+            (self.image, self.active) = self.lockSprites 
 
 
 # Buttons that has both images and text -> the generate! button

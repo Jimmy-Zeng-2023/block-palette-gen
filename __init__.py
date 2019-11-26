@@ -50,7 +50,7 @@ class GeneratorMode(Mode):
         self.blocks = self.myReader.parseFiles(path)
         print("Loading Complete!")
         self.myGen = BlockGenerator(self.blocks)
-        self.state = State([self.blocks[0] for _ in range(5)], [])
+        self.state = State([self.blocks[0] for _ in range(5)])
 
         self.ui = {
             "smallFont" : "Verdana 10",
@@ -148,6 +148,13 @@ class GeneratorMode(Mode):
                     self.generatePalette()
                 elif button.action == "changeMode":
                     self.changeMode()
+        for i in range(len(self.panels)):
+            panel = self.panels[i]
+            if(panel.checkInBounds(mouseX, mouseY) == "lock"):
+                if(i not in self.state.locked):
+                    self.state.locked.add(i)
+                else:
+                    self.state.locked.remove(i)
 
 
 ##################################
@@ -307,12 +314,16 @@ class BlockPaletteGenerator(ModalApp):
     def createIcons(self, key):
         if(key == "unlock"):
             unlockIcon = Image.open(self.paths[key]).convert("RGBA")
+            unlockIcon = self.scaleImage(unlockIcon, 2)
             return (unlockIcon, unlockIcon)
         else:
             activeIcon = Image.open(self.paths[key]).convert("RGBA")
             colorMask = Image.new('RGBA', (activeIcon.width, activeIcon.height), 
                                    color = "gray")
             inactiveIcon = Image.composite(colorMask, activeIcon, activeIcon)
+            
+            activeIcon = self.scaleImage(activeIcon, 2)
+            inactiveIcon = self.scaleImage(inactiveIcon, 2)
             return (inactiveIcon, activeIcon)
 
 

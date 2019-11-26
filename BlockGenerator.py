@@ -23,9 +23,9 @@ def rgbString(red, green, blue):
 
 # The State holds a list of 5 blocks last generated and displayed.
 class State(object):
-    def __init__(self, blocks, locked):
+    def __init__(self, blocks, locked = set()):
         self.blocks = blocks # List of blocks
-        self.locked = locked # List of indices locked currently
+        self.locked = locked # set of indices locked currently
 
     def __iter__(self):
         return tuple(self.blocks)
@@ -54,7 +54,7 @@ class BlockGenerator(object):
         locked = state.locked
         for i in range(5):
             if(i in locked):
-                toGen.append(state[i])
+                toGen.append(state.blocks[i])
 
         if(len(toGen) == 0):
             toGen.append(self.generateRandomBlock(state, toGen))
