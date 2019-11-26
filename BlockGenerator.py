@@ -47,34 +47,32 @@ class BlockGenerator(object):
     def __init__(self, blocks, noiseEpsilon = 10):
         self.blocks = blocks
         self.noiseEpsilon = noiseEpsilon
-        self.state = State([blocks[0] for _ in range(5)], [])
-        self.generate()
 
     # Generates a new State 
-    def generate(self):
-        self.toGen = []
-        locked = self.state.locked
+    def generate(self, state):
+        toGen = []
+        locked = state.locked
         for i in range(5):
             if(i in locked):
-                toGen.append(self.state[i])
+                toGen.append(state[i])
 
-        if(len(self.toGen) == 0):
-            self.toGen.append(self.generateRandomBlock())
-        while(len(self.toGen) < 5):
-            self.toGen.append(self.generateBlock())
-        self.state = State(self.toGen, locked)
-        print(self.state)
+        if(len(toGen) == 0):
+            toGen.append(self.generateRandomBlock(state, toGen))
+        while(len(toGen) < 5):
+            toGen.append(self.generateBlock(state, toGen))
+        return State(toGen, locked)
+        print(state)
 
-    def generateRandomBlock(self):
+    def generateRandomBlock(self, state, toGen):
         randColor = [random.randint(1,255) for _ in range(3)]
         randNoise = random.randint(1,40)
-        return self.findBlockFromColor(randColor, randNoise)
+        return self.findBlockFromColor(state, toGen, randColor, randNoise)
 
-    def generateBlock(self):
-        color = self.toGen[-1].colors
-        noise = self.toGen[-1].noise
+    def generateBlock(self, state, toGen):
+        color = toGen[-1].colors
+        noise = toGen[-1].noise
         analogous = self.findAnalogous(color)
-        block = self.findBlockFromColor(analogous, noise)
+        block = self.findBlockFromColor(state, toGen, analogous, noise)
         return block
 
     # Find the complement
@@ -110,7 +108,7 @@ class BlockGenerator(object):
     def findTriadics(self): pass
 
     # Given a color and a noise, finds the block closest to that color within acceptable noise
-    def findBlockFromColor(self, color, noise):
+    def findBlockFromColor(self, state, toGen, color, noise):
         lowest = 255*3
         lowestBlock = self.blocks[0]
         for block in self.blocks:
@@ -119,8 +117,8 @@ class BlockGenerator(object):
             dB = abs(color[2] - block.colors[2])
             dColor = dR + dG + dB
             dNoise = abs(block.noise - noise)
-            if(block not in self.toGen and
-               block not in self.state.blocks and
+            if(block not in toGen and
+               block not in state.blocks and
                dColor < lowest and
                dNoise < self.noiseEpsilon):
                 lowest = dColor

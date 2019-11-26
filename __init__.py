@@ -50,11 +50,7 @@ class GeneratorMode(Mode):
         self.blocks = self.myReader.parseFiles(path)
         print("Loading Complete!")
         self.myGen = BlockGenerator(self.blocks)
-
-        self.panelXMargin = 20
-        self.panelYMargin = 150
-        self.panelHeight = 200
-        self.margins = {}
+        self.state = State([self.blocks[0] for _ in range(5)], [])
 
         self.ui = {
             "smallFont" : "Verdana 10",
@@ -62,13 +58,15 @@ class GeneratorMode(Mode):
             "largeFont" : "Verdana 18 bold",
             "genModeButton" : (66, 10, 96, 38),
             "presetButton" : (198, 10, 96, 38),
-            "generateButton" : (570, 450, 200, 50)
+            "generateButton" : (570, 450, 200, 50),
+            "panels" : (20, 150, 200)
         }
 
         self.setBackground()
         self.topLevelButtons = []
         self.createPanels()
         self.createButtons()
+        self.generatePalette()
 
 ##################################
 #     appStarted() Helpers       #
@@ -79,12 +77,10 @@ class GeneratorMode(Mode):
 
     def createPanels(self):
         self.panels = []
-        panelWidth = (self.width - 2*self.panelXMargin) // 5
-        panelHeight = self.panelHeight
-        panelX = self.panelXMargin
-        panelY = self.panelYMargin
-
-        for block in self.myGen.state.blocks:
+        panelX, panelY, panelHeight = self.ui["panels"]
+        panelWidth = (self.width - 2*panelX) // 5
+        
+        for block in self.state.blocks:
             panel = BlockPanel(panelX, panelY,
                                panelWidth - 10,
                                panelHeight,
@@ -133,13 +129,13 @@ class GeneratorMode(Mode):
 ##################################
 
     def updatePanels(self):
-        for i in range(len(self.myGen.state.blocks)):
-            block = self.myGen.state.blocks[i]
+        for i in range(len(self.state.blocks)):
+            block = self.state.blocks[i]
             panel = self.panels[i]
             panel.setBlock(block)
 
     def generatePalette(self):
-        self.myGen.generate() # Save state in App or in Generator?
+        self.state = self.myGen.generate(self.state)
         self.updatePanels()
 
     def changeMode(self):
@@ -163,8 +159,7 @@ class GeneratorMode(Mode):
 
     def keyPressed(self, event):
         if(event.key == 'r'):
-            self.myGen.generate() # Save state in App or in Generator?
-            self.updatePanels()
+            self.generatePalette()
     
     def mousePressed(self, event):
         self.checkButtons(event.x, event.y)
