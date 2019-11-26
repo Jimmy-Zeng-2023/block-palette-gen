@@ -19,181 +19,25 @@ from tkinter.font import *
 from Block import *
 from TextureReader import *
 from BlockGenerator import *
+from Buttons import *
+from Panels import *
 
-# Base for all buttons the player can click on
-class Button(object):
-    def __init__(self, x, y, width, height, action = "", color = None):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.action = action
-        self.color = color
+#################################################
+# TODO: QUESTIONS FOR DINA
+# 
+# 1. How to avoid having 10 + variable constructors?
+# 2. Best way to organize button actions?
+#       - Button do own action, or app do action?
+# 3. Organize subclasses?
+#       - Subclass for each type of button? Or generic subclasses?
+# 4. Generator hold frame object or App hold?
+# 5. Getting good fonts in tkinter?
 
-    def draw(self, canvas):
-        # Draws the rectangle of the button
-        if(self.color != None):
-            canvas.create_rectangle(self.x, self.y,
-                                    self.x + self.width, self.y + self.height,
-                                    width = 0,
-                                    fill = self.color)
-
-    def checkInBounds(self, mouseX, mouseY):
-        return (mouseX > self.x and mouseX < self.x + self.width and
-                mouseY > self.y and mouseY < self.y + self.height)
-        
-# Button that also displays text
-class TextButton(Button):
-    def __init__(self, x, y, width, height,
-                 font, text, textColor, activeColor, action, offset = 0, color = None):
-        super().__init__(x, y, width, height, action, color)
-        self.text = text
-        self.font = font
-        self.textColor = textColor
-        self.activeColor = activeColor
-        self.offset = offset
-
-    def draw(self, canvas):
-        super().draw(canvas)
-        canvas.create_text(self.x + self.width/2, self.y + self.height/2 + self.offset,
-                           text = self.text,
-                           font = self.font,
-                           fill = self.textColor,
-                           activefill = self.activeColor)
-
-# Buttons that display an image
-class ImageButton(Button):
-    def __init__(self, x, y, width, height, action, sprites):
-        super().__init__(x, y, width, height, action, None)
-        # Active is image displayed when moused over
-        # sprites holds both the regular and the active image
-        image, active = sprites
-        self.image = image.resize((width, height))
-        self.active = active.resize((width, height))
-
-    def draw(self, canvas):
-        canvas.create_image(self.x, self.y,
-                            image = ImageTk.PhotoImage(self.image),
-                            activeimage = ImageTk.PhotoImage(self.active),
-                            anchor = "nw")
-
-class LockableButton(ImageButton):
-    def __init__(self, x, y, width, height, action, lockSprites, unlockSprite):
-        self.lockSprites = lockSprites
-        self.unlockSprites = unlockSprite
-        image, active = self.lockSprites
-        self.isLocked = False # If locked, the unlock button should appear.
-                              # Else, the lock button should appear
-        self.lockedColor = "deep sky blue" # the button glows this color when locked
-
-        super().__init__(x, y, width, height, action, self.lockSprites)
-    
-    def lock(self):
-        self.isLocked = not self.isLocked
-        (self.image, self.active) = self.unlockSprite # The unlock button is always shaded in
-
-    def draw(self, canvas):
-        if(self.isLocked):
-            canvas.create_oval(self.x, self.y,
-                               self.x + self.width, self.y + self.height,
-                               width = 0,
-                               fill = self.lockedColor)
-        super().draw(canvas)
-
-
-# Buttons that has both images and text -> the generate! button
-class GenerateButton(Button):
-    def __init__(self, x, y, width, height,
-             font, text, textColor, activeColor, margins, action, image = None, color = None):
-        super().__init__(x, y, width, height, action, color)
-        self.text = text
-        self.font = font
-        self.textColor = textColor
-        self.activeColor = activeColor
-        size = min(width, height)
-        self.image = image.resize((size, size))
-        self.xMargin, self.yMargin = margins
-
-    def draw(self, canvas):
-        super().draw(canvas)
-        canvas.create_image(self.x + self.xMargin,
-                            self.y + self.height / 2,
-                            image = ImageTk.PhotoImage(self.image),
-                            anchor = "w")
-        canvas.create_text(self.x + self.image.width + self.xMargin * 2,
-                           self.y + self.height / 2 ,
-                           text = self.text,
-                           font = self.font,
-                           fill = self.textColor,
-                           activefill = self.activeColor,
-                           anchor = "w")
-
-# A panel that holds the block and the corresponding buttons
-class BlockPanel(object):
-    def __init__(self, x, y, width, height, icons, block = None):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.block = block
-        self.margins = 2
-        self.icons = icons # Icons is a dict of icons for the 3 buttons
-        self.isLocked = False
-
-        self.nameFont = "Verdana 10 italic"
-        self.nameColor = "white"
-        self.convertedName = TextureReader.convertBlockNames(self.block.name)
-
-        self.createButtons()
-
-    def createButtons(self):
-        side = self.width // 5 # The side length of each button
-        y = self.y + self.height + self.margins * 2
-        x = self.x + self.width - side
-
-        # The Move Button (2)
-        action = "Drag"
-        moveButton = ImageButton(x, y, side, side, action, self.icons["drag"])
-        x -= (side + self.margins)
-            
-        # The Search Button (1)
-        action = "Search"
-        searchButton = ImageButton(x, y, side, side, action, self.icons["search"])
-        x -= (side + self.margins)
-
-        # The Lock Button (0)
-        action = "Lock"
-        lockButton = LockableButton(x, y, side, side, action,
-                                    self.icons["lock"], self.icons["unlock"])
-        
-        self.buttons = [lockButton, searchButton, moveButton]
-    
-    # Determines which button has been clicked
-    def checkInBounds(self, mouseX, mouseY):
-        for i in range(len(self.buttons)):
-            if(self.buttons[i].checkInBounds(mouseX, mouseY)):
-                return i
-        return False
-
-    def draw(self, app, canvas, scale = 8):
-        canvas.create_rectangle(self.x, self.y,
-                                self.x + self.width, self.y + self.height,
-                                width = 0,
-                                fill = "dark slate blue")
-        canvas.create_text(self.x + self.margins, self.y + self.margins,
-                           text = self.convertedName,
-                           font = self.nameFont,
-                           fill = self.nameColor,
-                           anchor = "nw")
-        self.block.draw(app, canvas, self.x + self.width/2, self.y + self.height/2, scale)
-        
-        for button in self.buttons:
-            button.draw(canvas)
-
-    def setBlock(self, block):
-        self.block = block
-        self.convertedName = TextureReader.convertBlockNames(self.block.name)
-
+# Lock button
+# Polish algorithm
+# Do rest of UI
+# Send Dina video of project tonight (before 1130)
+#################################################
 
 # Modes and ModalApp classes inherited from cmu-112-graphics
 # Class Notes: Animation Part 1
@@ -409,9 +253,7 @@ class PresetMode(Mode):
     
     def checkButtons(self, mouseX, mouseY):
         for button in self.topLevelButtons:
-            print("button checked!")
             if button.checkInBounds(mouseX, mouseY): # If a button was in bounds
-                print("in bounds!")
                 if button.action == "changeMode":
                     self.changeMode()
 

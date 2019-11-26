@@ -89,7 +89,7 @@ class BlockGenerator(object):
         highest = max(color[:3])
         higherColor = []
         for i in range(3):
-            variation = 20 + random.randint(1,30)
+            variation = 20
             if(color[i] == highest):
                 newElement = color[i] - variation
             else:
