@@ -119,3 +119,18 @@ class TextureReader(object):
             return 0
         else:
             return len(colorLst)
+
+    @staticmethod
+    def convertBlockNames(name):
+        newStr = ""
+        charcount = 0
+        for s in name.split('_'):
+            charcount += len(s)
+            if(charcount > 20):
+                newStr += '\n'
+                charcount = 0
+            newStr += s.capitalize()
+            newStr += ' '
+            charcount += 1
+        return newStr
+        
