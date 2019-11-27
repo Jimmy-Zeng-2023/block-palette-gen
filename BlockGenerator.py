@@ -13,6 +13,8 @@ from cmu_112_graphics import *
 from tkinter import *
 from PIL import Image
 import random, math, copy, string, time, os
+
+# My other classes
 from Block import *
 from TextureReader import *
 
@@ -21,7 +23,11 @@ def rgbString(red, green, blue):
     # Don't worry about how this code works yet.
     return "#%02x%02x%02x" % (red, green, blue)
 
-# The State holds a list of 5 blocks last generated and displayed.
+#################################################
+# The State is another storage object, holding a list of 5 blocks last generated
+# to be displayed.
+#################################################
+
 class State(object):
     def __init__(self, blocks, locked = set()):
         self.blocks = blocks # List of blocks
@@ -39,7 +45,7 @@ class State(object):
         return toPrint
 
 #################################################
-# The BlockGenerator generateS matching blocks when provided with
+# The BlockGenerator generates matching blocks when provided with
 # a base block. This is the key to the palette generator.
 #################################################
 class BlockGenerator(object):

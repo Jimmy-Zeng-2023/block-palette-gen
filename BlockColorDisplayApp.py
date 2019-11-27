@@ -24,6 +24,8 @@ def rgbString(red, green, blue):
 #################################################
 # The ColorDisplayApp allows one to go through each block in the loaded
 # Texturepack and view their colors and noise. Press left and right to navigate.
+
+# Citation: The App class comes from cmu-112-graphics, from Course Notes: Animations Part 2
 #################################################
 class ColorDisplayApp(App):
     def appStarted(self):

@@ -20,6 +20,10 @@ from Block import *
 from Buttons import *
 from TextureReader import *
 
+#################################################
+# The BlockPanel is implemented in __init__.py. It contains a background, a block,
+# three buttons, and the block's name.
+#################################################
 
 # A panel that holds the block and the corresponding buttons
 class BlockPanel(object):

@@ -19,6 +19,8 @@ from TextureReader import *
 #################################################
 # The TextureDisplayApp shows an overview of all the textures loaded.
 # Press left and right to navigate.
+
+# Citation: The App class comes from cmu-112-graphics, from Course Notes: Animations Part 2
 #################################################
 class TextureDisplayApp(App):
     def appStarted(self):

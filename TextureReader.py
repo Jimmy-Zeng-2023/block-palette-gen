@@ -24,6 +24,8 @@ def readFile(path):
 #################################################
 # The TextureReader takes in the raw textures, derive their colors and noise
 # factors, and organizes them for the rest of the classes.
+
+# Citation: PIL.Images for image manipulation options. From the Python Imaging Library
 #################################################
 class TextureReader(object):
     def __init__(self, colorEpsilon, path):
@@ -124,9 +126,10 @@ class TextureReader(object):
     def convertBlockNames(name):
         newStr = ""
         charcount = 0
+        maxChars = 18 # Maximum characters before line break
         for s in name.split('_'):
             charcount += len(s)
-            if(charcount > 20):
+            if(charcount > maxChars):
                 newStr += '\n'
                 charcount = 0
             newStr += s.capitalize()

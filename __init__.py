@@ -39,8 +39,13 @@ from Panels import *
 # Send Dina video of project tonight (before 1130)
 #################################################
 
-# Modes and ModalApp classes inherited from cmu-112-graphics
-# Class Notes: Animation Part 1
+#################################################
+# THIS IS THE MAIN FILE TO BE RUN!
+#
+# The GeneratorMode is the basic Mode for generating block palettes.
+#
+# Citation: The Mode and ModalApp classes come from cmu-112-graphics, from Course Notes: Animations Part 2
+#################################################
 class GeneratorMode(Mode):
     # Final frontend app
     def appStarted(self):
@@ -197,9 +202,14 @@ class GeneratorMode(Mode):
         self.drawButtons(canvas)
         # Animations
 
-###################################################################
-#                       The Preset Mode                           #
-###################################################################
+#################################################
+#              -= THE PRESET MODE =-
+#
+# This alternative mode lets users choose from a few pre-created
+# color palettes to jump-start their generator.
+#
+# Citation: The Mode and ModalApp classes come from cmu-112-graphics, from Course Notes: Animations Part 2
+#################################################
 
 class PresetMode(Mode):
     # Changes the state
@@ -283,6 +293,14 @@ class PresetMode(Mode):
         self.drawBg(canvas)
         self.drawButtons(canvas)
 
+#################################################
+#              THE MODAL APP
+#
+# The ModalApp ties the two modes together, and also initializes some important
+# dictionaries, such as the paths to the files.
+#
+# Citation: The Mode and ModalApp classes come from cmu-112-graphics, from Course Notes: Animations Part 2
+#################################################
 
 class BlockPaletteGenerator(ModalApp):
     def appStarted(self):
@@ -325,7 +343,6 @@ class BlockPaletteGenerator(ModalApp):
             activeIcon = self.scaleImage(activeIcon, 2)
             inactiveIcon = self.scaleImage(inactiveIcon, 2)
             return (inactiveIcon, activeIcon)
-
 
 def main():
     myPaletteGenerator = BlockPaletteGenerator(width = 800, height = 600)

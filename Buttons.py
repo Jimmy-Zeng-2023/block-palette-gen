@@ -18,6 +18,11 @@ from tkinter.font import *
 # My other classes
 from Block import *
 
+#################################################
+# The variety of Buttons found here are implemented in __init__.py and helps
+# with drawing and checking mouse detection.
+#################################################
+
 # Base for all buttons the player can click on
 class Button(object):
     def __init__(self, x, y, width, height, action = "", color = None):
