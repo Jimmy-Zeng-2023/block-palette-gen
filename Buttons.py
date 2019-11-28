@@ -24,68 +24,57 @@ from Block import *
 #################################################
 
 # Base for all buttons the player can click on
+# Tab and gen buttons won't have an active mode. The search + lock buttons will.
 class Button(object):
-    def __init__(self, x, y, width, height, action = "", color = None):
+    def __init__(self, x, y, width, height, sprite, activeSprite = None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.action = action
-        self.color = color
 
-    def draw(self, canvas):
-        # Draws the rectangle of the button
-        if(self.color != None):
-            canvas.create_rectangle(self.x, self.y,
-                                    self.x + self.width, self.y + self.height,
-                                    width = 0,
-                                    fill = self.color)
+        WHRatio = sprite.width // sprite.height
+        if(width > height):
+            width = height * WHRatio
+        else:
+            height = width // WHRatio
+        ratio = (width, height)
 
-    def checkInBounds(self, mouseX, mouseY):
-        return (mouseX > self.x and mouseX < self.x + self.width and
-                mouseY > self.y and mouseY < self.y + self.height)
+        self.sprite = sprite.resize(ratio)
         
-# Button that also displays text
-class TextButton(Button):
-    def __init__(self, x, y, width, height,
-                 font, text, textColor, activeColor, action, offset = 0, color = None):
-        super().__init__(x, y, width, height, action, color)
-        self.text = text
-        self.font = font
-        self.textColor = textColor
-        self.activeColor = activeColor
-        self.offset = offset
-
-    def draw(self, canvas):
-        super().draw(canvas)
-        canvas.create_text(self.x + self.width/2, self.y + self.height/2 + self.offset,
-                           text = self.text,
-                           font = self.font,
-                           fill = self.textColor,
-                           activefill = self.activeColor)
-
-# Buttons that display an image
-class ImageButton(Button):
-    def __init__(self, x, y, width, height, action, sprites):
-        super().__init__(x, y, width, height, action, None)
-        # Active is image displayed when moused over
-        # sprites holds both the regular and the active image
-        self.image, self.active = sprites
+        if(activeSprite != None):
+            self.activeSprite = activeSprite.resize(ratio)
+        else:
+            self.activeSprite = self.sprite
 
     def draw(self, canvas):
         canvas.create_image(self.x, self.y,
-                            image = ImageTk.PhotoImage(self.image),
-                            activeimage = ImageTk.PhotoImage(self.active),
+                            image = ImageTk.PhotoImage(self.sprite),
+                            activeimage = ImageTk.PhotoImage(self.activeSprite),
                             anchor = "nw")
+        
+    def checkInBounds(self, mouseX, mouseY):
+        return (mouseX > self.x and mouseX < self.x + self.width and
+                mouseY > self.y and mouseY < self.y + self.height)
 
-class LockableButton(ImageButton):
-    def __init__(self, x, y, width, height, action, lockSprites, unlockSprite):
-        self.lockSprites = lockSprites
-        self.unlockSprite = unlockSprite
-        self.isLocked = False # If locked, the unlock button should appear.
-                              # Else, the lock button should appear
+    def setSprites(self, inactive, active):
+        self.sprite = inactive
+        self.activeSprite = active
+        
 
-        super().__init__(x, y, width, height, action, self.lockSprites)
+class LockableButton(Button):
+    def __init__(self, x, y, width, height,
+                 lockInactive, lockActive,
+                 unlockInactive, unlockActive):
+                 
+        self.lockInactive   = lockInactive
+        self.lockActive     = lockActive
+        self.unlockInactive = unlockInactive
+        self.unlockActive   = unlockActive
+
+        self.isLocked = False # If locked, the lock button should appear.
+                              # Else, the unlock button should appear
+
+        super().__init__(x, y, width, height, self.unlockInactive, self.unlockActive):
     
     def lock(self):
         self.isLocked = not self.isLocked
