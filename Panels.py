@@ -49,19 +49,22 @@ class BlockPanel(object):
         x = self.x + self.width - side
 
         # The Drag Button (2)
-        action = "Drag"
-        self.dragButton = ImageButton(x, y, side, side, action, self.icons["drag"])
+        active = self.icons["drag"]
+        inactive = self.icons["inactive-drag"]
+        self.dragButton = ImageButton(x, y, side, side, inactive, active)
         x -= (side + self.margins)
             
         # The Search Button (1)
-        action = "Search"
-        self.searchButton = ImageButton(x, y, side, side, action, self.icons["search"])
+        active = self.icons["search"]
+        inactive = self.icons["inactive-search"]
+        self.searchButton = ImageButton(x, y, side, side, inactive, active)
         x -= (side + self.margins)
 
         # The Lock Button (0)
-        action = "Lock"
-        self.lockButton = LockableButton(x, y, side, side, action,
-                                    self.icons["lock"], self.icons["unlock"])
+        activeUnlock = self.icons["unlock"]
+        inactiveUnlock = self.icons["inactive-unlock"]
+        lock = self.icons["lock"]
+        self.lockButton = LockButton(x, y, side, side, lock, inactiveUnlock, activeUnlock)
     
     # Determines which button has been clicked
     def checkInBounds(self, mouseX, mouseY):

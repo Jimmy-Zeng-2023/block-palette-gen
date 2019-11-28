@@ -61,16 +61,16 @@ class GeneratorMode(Mode):
             "smallFont" : "Verdana 10",
             "medFont" : "Verdana 12 bold",
             "largeFont" : "Verdana 18 bold",
-            "genModeButton" : (66, 10, 96, 38),
-            "presetButton" : (198, 10, 96, 38),
-            "generateButton" : (570, 450, 200, 50),
-            "panels" : (20, 150, 200)
+            "genModeButton" : (79, 55, 172, 50),
+            "presetButton" : (290, 55, 154, 50),
+            "generateButton" : (690, 430, 200, 50),
+            "panels" : (20, 170, 200)
         }
 
         self.setBackground()
         self.topLevelButtons = []
-        self.createPanels()
         self.createButtons()
+        self.createPanels()
         self.generatePalette()
 
 ##################################
@@ -79,6 +79,7 @@ class GeneratorMode(Mode):
 
     def setBackground(self):
         self.background = self.app.ui_images["Bg_Normal"]
+        self.bgMiddle = self.background.crop((480, 0, 1400, 1009))
 
     def createPanels(self):
         self.panels = []
@@ -96,38 +97,15 @@ class GeneratorMode(Mode):
 
     def createButtons(self):
         x, y, width, height = self.ui["genModeButton"]
-        genModeButton = TextButton(x, y, width, height,
-                                    action = None,
-                                    text = "Generator",
-                                    font = self.ui["medFont"], 
-                                    textColor = "white",
-                                    activeColor = "white",
-                                    offset = 5)
+        self.genModeButton = ImageButton(x, y, width, height)
         
-        self.topLevelButtons.append(genModeButton)
-
         x, y, width, height = self.ui["presetButton"]
-        presetButton = TextButton(x, y, width, height,
-                                    action = "changeMode",
-                                    text = "Presets",
-                                    font = self.ui["medFont"], 
-                                    textColor = "white",
-                                    activeColor = "white",
-                                    offset = 5)
-        self.topLevelButtons.append(presetButton)
+        self.presetButton = ImageButton(x, y, width, height)
 
         x, y, width, height = self.ui["generateButton"]
-        icon = Image.open(self.app.paths["generate"]).convert("RGBA")
-        generateButton = GenerateButton(x, y, width, height,
-                                    action = "generate",
-                                    text = "Generate!",
-                                    font = self.ui["largeFont"],
-                                    textColor = "gray15",
-                                    activeColor = "white",
-                                    image = icon,
-                                    color = "dark slate blue",
-                                    margins = (5,5))
-        self.topLevelButtons.append(generateButton) 
+        x = self.width - self.ui["panels"][0] - width
+        sprite = self.app.ui_images["generateButton"]
+        self.generateButton = ImageButton(x, y, width, height, sprite)
 
 ##################################
 #      Controller Helpers        #
@@ -145,14 +123,16 @@ class GeneratorMode(Mode):
 
     def changeMode(self):
         self.app.setActiveMode(self.app.presets)
+        self.app.sizeChanged()
     
     def checkButtons(self, mouseX, mouseY):
-        for button in self.topLevelButtons:
-            if button.checkInBounds(mouseX, mouseY): # If a button was in bounds
-                if button.action == "generate":
-                    self.generatePalette()
-                elif button.action == "changeMode":
-                    self.changeMode()
+        if(self.genModeButton.checkInBounds(mouseX, mouseY)):
+            pass
+        elif(self.presetButton.checkInBounds(mouseX, mouseY)):
+            self.changeMode()
+        elif(self.generateButton.checkInBounds(mouseX, mouseY)):
+            self.generatePalette()
+
         for i in range(len(self.panels)):
             panel = self.panels[i]
             if(panel.checkInBounds(mouseX, mouseY) == "lock"):
@@ -160,6 +140,11 @@ class GeneratorMode(Mode):
                     self.state.locked.add(i)
                 else:
                     self.state.locked.remove(i)
+    
+    def sizeChanged(self):
+        if(self.app.width > 900):
+            self.createPanels()
+            self.createButtons()
 
 
 ##################################
@@ -174,6 +159,7 @@ class GeneratorMode(Mode):
             self.generatePalette()
     
     def mousePressed(self, event):
+        print(event.x, event.y)
         self.checkButtons(event.x, event.y)
 
 ##################################
@@ -184,14 +170,20 @@ class GeneratorMode(Mode):
         canvas.create_image(0, 0,
                             image = ImageTk.PhotoImage(self.background),
                             anchor = "nw")
+        if(self.app.width > 1400):
+            # When its too big, shoehorn fixes in another background
+            canvas.create_image(1400, 0,
+                            image = ImageTk.PhotoImage(self.bgMiddle),
+                            anchor = "nw")
 
     def drawBlockPanels(self, canvas):
         for panel in self.panels:
             panel.draw(self, canvas)
 
     def drawButtons(self, canvas):
-        for button in self.topLevelButtons:
-            button.draw(canvas)
+        self.genModeButton.draw(canvas)
+        self.presetButton.draw(canvas)
+        self.generateButton.draw(canvas)
 
     def redrawAll(self, canvas):
         # Background
@@ -219,8 +211,8 @@ class PresetMode(Mode):
             "smallFont" : "Verdana 10",
             "medFont" : "Verdana 12 bold",
             "largeFont" : "Verdana 18 bold",
-            "genModeButton" : (66, 10, 96, 38),
-            "presetButton" : (198, 10, 96, 38)
+            "genModeButton" : (79, 55, 172, 50),
+            "presetButton" : (290, 55, 154, 50)
         }
 
         self.setBackground()
@@ -232,29 +224,14 @@ class PresetMode(Mode):
 
     def setBackground(self):
         self.background = self.app.ui_images["Bg_Alternate"]
+        self.bgMiddle = self.background.crop((480, 0, 1400, 1009))
 
     def createButtons(self):
-        self.topLevelButtons = []
         x, y, width, height = self.ui["genModeButton"]
-        genModeButton = TextButton(x, y, width, height,
-                                    action = "changeMode",
-                                    text = "Generator",
-                                    font = self.ui["medFont"], 
-                                    textColor = "white",
-                                    activeColor = "white",
-                                    offset = 5)
+        self.genModeButton = ImageButton(x, y, width, height)
         
-        self.topLevelButtons.append(genModeButton)
-
         x, y, width, height = self.ui["presetButton"]
-        presetButton = TextButton(x, y, width, height,
-                                    action = None,
-                                    text = "Presets",
-                                    font = self.ui["medFont"], 
-                                    textColor = "white",
-                                    activeColor = "white",
-                                    offset = 5)
-        self.topLevelButtons.append(presetButton)
+        self.presetButton = ImageButton(x, y, width, height)
 
 ##################################
 #      Controller Helpers        #
@@ -262,12 +239,13 @@ class PresetMode(Mode):
 
     def changeMode(self):
         self.app.setActiveMode(self.app.generator)
+        self.app.sizeChanged()
     
     def checkButtons(self, mouseX, mouseY):
-        for button in self.topLevelButtons:
-            if button.checkInBounds(mouseX, mouseY): # If a button was in bounds
-                if button.action == "changeMode":
-                    self.changeMode()
+        if(self.genModeButton.checkInBounds(mouseX, mouseY)):
+            self.changeMode()
+        elif(self.presetButton.checkInBounds(mouseX, mouseY)):
+            pass
 
 ##################################
 #     Top Level Controllers      #
@@ -284,10 +262,15 @@ class PresetMode(Mode):
         canvas.create_image(0, 0,
                             image = ImageTk.PhotoImage(self.background),
                             anchor = "nw")
+        if(self.app.width > 1400):
+            # When its too big, shoehorn fixes in another background
+            canvas.create_image(1400, 0,
+                            image = ImageTk.PhotoImage(self.bgMiddle),
+                            anchor = "nw")
 
     def drawButtons(self, canvas):
-        for button in self.topLevelButtons:
-            button.draw(canvas)
+        self.genModeButton.draw(canvas)
+        self.presetButton.draw(canvas)
 
     def redrawAll(self, canvas):
         self.drawBg(canvas)
@@ -304,22 +287,25 @@ class PresetMode(Mode):
 
 class BlockPaletteGenerator(ModalApp):
     def appStarted(self):
+
+        # Edit links to UI images here!!!
         self.paths = {
             "textures" : "Block-textures-vanilla-1.14.4",
-            "Bg_Normal" : "ui-images/Bg_normal.png",
-            "Bg_Alternate" : "ui-images/Bg_alternate.png",
+            "Bg_Normal" : "ui-images/Bg_normal_2.png",
+            "Bg_Alternate" : "ui-images/Bg_alternate_2.png",
             "search" : "ui-images/search-icon.png",
             "drag" : "ui-images/drag-icon.png",
             "lock" : "ui-images/lock-icon.png",
             "unlock" : "ui-images/unlock-icon.png",
             "generate" : "ui-images/generate-icon.png",
+            "generateButton" : "ui-images/generate-button.png",
         }
 
         self.ui_images = dict() # Creates a dictionary of the UI images
         for key in self.paths:
             if(key == "textures"): continue
-            elif(key in ["search", "drag", "lock", "unlock"]):
-                self.ui_images[key] = self.createIcons(key)
+            elif(key in ["search", "drag", "unlock", "lock"]): # These need additional "grayed out" icons. With separate keys.
+                self.createInactiveIcons(key)
             else:
                 self.ui_images[key] = Image.open(self.paths[key]).convert("RGBA")
 
@@ -329,23 +315,30 @@ class BlockPaletteGenerator(ModalApp):
         self.state = State([], [])
         self.timerDelay = 1000
 
-    def createIcons(self, key):
-        if(key == "unlock"):
-            unlockIcon = Image.open(self.paths[key]).convert("RGBA")
-            unlockIcon = self.scaleImage(unlockIcon, 2)
-            return (unlockIcon, unlockIcon)
-        else:
-            activeIcon = Image.open(self.paths[key]).convert("RGBA")
-            colorMask = Image.new('RGBA', (activeIcon.width, activeIcon.height), 
-                                   color = "gray")
-            inactiveIcon = Image.composite(colorMask, activeIcon, activeIcon)
-            
+    def createInactiveIcons(self, key):
+        activeIcon = Image.open(self.paths[key]).convert("RGBA")
+
+        if(key == "lock"):
+        # In the case of lock, there is no inactive image, so the process terminates early
             activeIcon = self.scaleImage(activeIcon, 2)
-            inactiveIcon = self.scaleImage(inactiveIcon, 2)
-            return (inactiveIcon, activeIcon)
+            self.ui_images[key] = activeIcon
+            return None
+        
+        colorMask = Image.new('RGBA', (activeIcon.width, activeIcon.height), 
+                              color = "gray")
+        inactiveIcon = Image.composite(colorMask, activeIcon, activeIcon)
+        
+        activeIcon = self.scaleImage(activeIcon, 2)
+        inactiveIcon = self.scaleImage(inactiveIcon, 2)
+        
+        newKey = "inactive-" + key
+
+        self.ui_images[key] = activeIcon
+        self.ui_images[newKey] = inactiveIcon
 
 def main():
-    myPaletteGenerator = BlockPaletteGenerator(width = 800, height = 600)
+    myPaletteGenerator = BlockPaletteGenerator(title = "Minecraft Block Palette Generator",
+                                               width = 900, height = 700)
 
 if __name__ == "__main__":
     main()

@@ -25,32 +25,38 @@ from Block import *
 
 # Base for all buttons the player can click on
 # Tab and gen buttons won't have an active mode. The search + lock buttons will.
-class Button(object):
-    def __init__(self, x, y, width, height, sprite, activeSprite = None):
+
+class ImageButton(object):
+    def __init__(self, x, y, width, height, sprite = None, activeSprite = None):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
 
-        WHRatio = sprite.width // sprite.height
+        '''WHRatio = sprite.width // sprite.height
         if(width > height):
             width = height * WHRatio
         else:
             height = width // WHRatio
         ratio = (width, height)
 
-        self.sprite = sprite.resize(ratio)
+        self.sprite = sprite.resize(ratio)'''
+        self.sprite = sprite
         
         if(activeSprite != None):
-            self.activeSprite = activeSprite.resize(ratio)
+            #self.activeSprite = activeSprite.resize(ratio)
+            self.activeSprite = activeSprite
         else:
             self.activeSprite = self.sprite
 
     def draw(self, canvas):
-        canvas.create_image(self.x, self.y,
+        if(self.sprite == None):
+            return
+        else:
+            canvas.create_image(self.x + self.width//2,
+                            self.y + self.height//2,
                             image = ImageTk.PhotoImage(self.sprite),
-                            activeimage = ImageTk.PhotoImage(self.activeSprite),
-                            anchor = "nw")
+                            activeimage = ImageTk.PhotoImage(self.activeSprite))
         
     def checkInBounds(self, mouseX, mouseY):
         return (mouseX > self.x and mouseX < self.x + self.width and
@@ -61,52 +67,24 @@ class Button(object):
         self.activeSprite = active
         
 
-class LockableButton(Button):
+class LockButton(ImageButton):
     def __init__(self, x, y, width, height,
-                 lockInactive, lockActive,
-                 unlockInactive, unlockActive):
+                 lockedActive,
+                 unlockedInactive, unlockedActive):
                  
-        self.lockInactive   = lockInactive
-        self.lockActive     = lockActive
-        self.unlockInactive = unlockInactive
-        self.unlockActive   = unlockActive
+        self.lockedActive     = lockedActive # Locked -> Shut lock. Displayed when block is locked.
+                                             # When locked, always white.
+        self.unlockedInactive = unlockedInactive # Unlocked -> Open lock. Displayed when block is not locked.
+        self.unlockedActive   = unlockedActive
 
         self.isLocked = False # If locked, the lock button should appear.
                               # Else, the unlock button should appear
 
-        super().__init__(x, y, width, height, self.unlockInactive, self.unlockActive):
+        super().__init__(x, y, width, height, self.unlockedInactive, self.unlockedActive)
     
     def lock(self):
         self.isLocked = not self.isLocked
         if(self.isLocked):
-            (self.image, self.active) = self.unlockSprite
+            self.setSprites(self.lockedActive, self.lockedActive)
         else:
-            (self.image, self.active) = self.lockSprites 
-
-
-# Buttons that has both images and text -> the generate! button
-class GenerateButton(Button):
-    def __init__(self, x, y, width, height,
-             font, text, textColor, activeColor, margins, action, image = None, color = None):
-        super().__init__(x, y, width, height, action, color)
-        self.text = text
-        self.font = font
-        self.textColor = textColor
-        self.activeColor = activeColor
-        size = min(width, height)
-        self.image = image.resize((size, size))
-        self.xMargin, self.yMargin = margins
-
-    def draw(self, canvas):
-        super().draw(canvas)
-        canvas.create_image(self.x + self.xMargin,
-                            self.y + self.height / 2,
-                            image = ImageTk.PhotoImage(self.image),
-                            anchor = "w")
-        canvas.create_text(self.x + self.image.width + self.xMargin * 2,
-                           self.y + self.height / 2 ,
-                           text = self.text,
-                           font = self.font,
-                           fill = self.textColor,
-                           activefill = self.activeColor,
-                           anchor = "w")
+            self.setSprites(self.unlockedInactive, self.unlockedActive)
