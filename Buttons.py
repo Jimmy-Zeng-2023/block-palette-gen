@@ -49,11 +49,16 @@ class ImageButton(object):
         else:
             self.activeSprite = self.sprite
 
-    def draw(self, canvas):
+    def draw(self, canvas, dragDelta = 0):
         if(self.sprite == None):
             return
         else:
-            canvas.create_image(self.x + self.width//2,
+            if(dragDelta != 0):
+                x = self.x + dragDelta
+            else:
+                x = self.x
+
+            canvas.create_image(x + self.width//2,
                             self.y + self.height//2,
                             image = ImageTk.PhotoImage(self.sprite),
                             activeimage = ImageTk.PhotoImage(self.activeSprite))

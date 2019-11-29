@@ -42,7 +42,40 @@ class BlockPanel(object):
         self.nameColor = "white"
         self.convertedName = TextureReader.convertBlockNames(self.block.name)
 
+        self.deltaX = 0
         self.createButtons()
+
+    def setDeltaGrid(self, amt):
+        self.deltaGrid = amt
+
+    def incDelta(self, otherPanelsX, minX, maxX):
+        self.deltaX += self.deltaGrid
+        newX = self.x + self.deltaX 
+        if(newX in otherPanelsX or
+           newX < minX or
+           newX > maxX):
+           self.deltaX -= self.deltaGrid
+
+    def decDelta(self, otherPanelsX, minX, maxX):
+        self.deltaX -= self.deltaGrid
+        newX = self.x + self.deltaX
+        #print(f"newX = {newX}, otherpanels = {otherPanelsX}")
+        if(newX in otherPanelsX or
+           newX < minX or
+           newX > maxX):
+           self.deltaX += self.deltaGrid
+           #print("Block already in place!")
+
+    def shiftInSteps(self):
+        numShifts = (self.deltaX + self.width//2) // self.deltaGrid
+        self.deltaX = numShifts * self.deltaGrid    
+
+    def lockInDelta(self):
+        self.x += self.deltaX
+        self.lockButton.x += self.deltaX
+        self.dragButton.x += self.deltaX
+        self.searchButton.x += self.deltaX
+        self.deltaX = 0
 
     def createButtons(self):
         side = 32 # The side length of each button
@@ -85,22 +118,24 @@ class BlockPanel(object):
             y2 = self.y + self.height + 40
         else:
             y2 = self.y + self.height
-    
-        canvas.create_rectangle(self.x, self.y,
-                                self.x + self.width, y2,
+
+        x = self.x + self.deltaX
+
+        canvas.create_rectangle(x, self.y,
+                                x + self.width, y2,
                                 width = 0,
                                 fill = "SlateBlue3")
-        canvas.create_text(self.x + self.margins, self.y + self.margins,
+        canvas.create_text(x + self.margins, self.y + self.margins,
                            text = self.convertedName,
                            font = self.nameFont,
                            fill = self.nameColor,
                            anchor = "nw")
-        self.block.draw(app, canvas, self.x + self.width/2, self.y + self.height/2, scale)
+        self.block.draw(app, canvas, x + self.width/2, self.y + self.height/2, scale)
         
         if(not self.isSearching):  # When searching, these buttons should not appear
-            self.dragButton.draw(canvas)
-            self.searchButton.draw(canvas)
-            self.lockButton.draw(canvas)
+            self.dragButton.draw(canvas, self.deltaX)
+            self.searchButton.draw(canvas, self.deltaX)
+            self.lockButton.draw(canvas, self.deltaX)
 
     def setBlock(self, block):
         self.block = block

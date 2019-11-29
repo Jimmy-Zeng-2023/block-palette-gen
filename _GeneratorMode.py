@@ -69,6 +69,11 @@ class GeneratorMode(Mode):
             "panels" : (20, 170, 200)
         }
 
+        # Info for dragging
+        self.dragPanel = None
+        self.dragStart = 0
+        self.dragDelta = 0
+
         self.setBackground()
         self.createButtons()
         self.createPanels()
@@ -95,6 +100,8 @@ class GeneratorMode(Mode):
                                self.app.ui_images,
                                block = block)
             self.panels.append(panel)
+            panel.setDeltaGrid(panelWidth)
+
             panelX += panelWidth
 
     def createButtons(self):
@@ -200,12 +207,17 @@ class GeneratorMode(Mode):
                 self.toggleSearchPanel()
             
             elif(panel.checkInBounds(mouseX, mouseY) == "drag"):
-                pass
-    
-    def sizeChanged(self):
-        if(self.app.width > 900):
-            self.createPanels()
-            self.createButtons()
+                self.dragPanel = panel
+                self.dragStart = mouseX # On the drag, we only care about the x coordinates.
+                self.dragPanelStartX = self.dragPanel.x
+
+    def findOtherPanelsX(self, curPanel):
+        # Used by mouseDragged. During dragging
+        result = []
+        for panel in self.panels:
+            if(panel != self.dragPanel and panel != curPanel):
+                result.append(panel.x + panel.deltaX)
+        return result
 
 ##################################
 #     Top Level Controllers      #
@@ -223,6 +235,52 @@ class GeneratorMode(Mode):
         #print(event.x, event.y)
         #print(self.searching, self.searchingIndex)
         self.checkButtons(event.x, event.y)
+
+    def mouseDragged(self, event):
+        if(self.dragPanel == None): return
+
+        self.dragPanel.deltaX = event.x - self.dragStart
+        # Move stuff
+        
+        oldLeft = self.dragPanelStartX
+        newLeft = self.dragPanelStartX + self.dragPanel.deltaX
+        oldRight = oldLeft + self.dragPanel.width
+        newRight = newLeft + self.dragPanel.width
+        for panel in self.panels:
+            if(panel == self.dragPanel): continue # Exclude the panel being repositioned
+
+            panelMid = panel.x + panel.width//2 + panel.deltaX
+            otherPanelsX = self.findOtherPanelsX(panel)
+            minX = self.ui["panels"][0]
+            maxX = self.width - self.ui["panels"][0]
+
+            if(oldRight < panelMid and newRight > panelMid):
+                panel.decDelta(otherPanelsX, minX, maxX) # Shift panel left
+            elif(oldLeft > panelMid and newLeft < panelMid):
+                print("Shifted Right!")
+                panel.incDelta(otherPanelsX, minX, maxX) # Shift panel right
+
+
+    def mouseReleased(self, event):
+        print("mouse released")
+        if(self.dragPanel != None):
+            # Snaps the current panel to the grid
+            self.dragPanel.deltaX = event.x - self.dragStart
+            self.dragPanel.shiftInSteps()
+            
+            print("Deltas Locked in! New X =", end = " ")
+            for panel in self.panels:
+                panel.lockInDelta()
+                print(panel.x, end = " ")
+            
+            self.dragStart = 0
+            self.dragPanel = None
+        
+
+    def sizeChanged(self):
+        if(self.app.width > 900):
+            self.createPanels()
+            self.createButtons()
 
 ##################################
 #         View Functions         #
