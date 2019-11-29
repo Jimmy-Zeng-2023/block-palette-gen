@@ -42,8 +42,7 @@ class TextureReader(object):
             self.blacklist.add(name)
 
     def parseFiles(self, path):
-        #blocks = dict()
-        blocks = []
+        blocks = dict()
         # Follow the format in class, base case -> finds a png file
         # Files are currently stored as a list of Block objects,
         # in the future I will emigrate to a dictionary structure
@@ -60,16 +59,16 @@ class TextureReader(object):
                 texture = texture.crop((0, 0, sideLength, sideLength))
                 colors, noise = self.getColorsAndNoise(texture)
 
-                #return {name : Block(name, colors, noise, texture)}
-                return [Block(name, colors, noise, texture)]
+                return {name : Block(name, colors, noise, texture)}
+                #return [Block(name, colors, noise, texture)]
             else:
-                #return dict()
-                return []
+                return dict()
+                #return []
         else:
             for fileName in os.listdir(path):
                 subBlocks = self.parseFiles(path + os.sep + fileName)
-                #blocks.update(subBlocks)
-                blocks += subBlocks
+                blocks.update(subBlocks)
+                #blocks += subBlocks
             return blocks
 
     def getColorsAndNoise(self, texture):

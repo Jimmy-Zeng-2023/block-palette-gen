@@ -26,18 +26,166 @@ from TextureReader import *
 #################################################
 
 class SearchPanel(object):
-    # Needs a list of blocks to display
-    def __init__(self, x, y, width, height, icons, blocks):
+    def __init__(self, x, y, width, height, blocks, icons):
+        # blocks - Dict of all blocks to be displayed
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.block = block
-        self.margins = 2
-        self.icons = icons # Icons is a dict of icons for the 3 buttons
-        self.isLocked = False
+        self.blocks = blocks 
+        self.blockLst = list(self.blocks.values()) # blocks needs to be converted to an iterable list
 
-        self.nameFont = "Verdana 10 italic"
-        self.nameColor = "white"
+        self.topMargin = 5 # Margin for the main list vertically
+        self.buttonMargin = 5 # Margin for the buttons
+        self.panelMargin = 38 # Margin for the main list
+        self.borderColor = "SlateBlue3"
+        self.mainColor = "SlateBlue4"
+
+        self.icons = icons # Icons is the ui_images dictionary
+
+        self.visible = False
+        self.start = 0
+        self.rows = 4
+        self.cols = 10
+        self.blocksPerPage = self.rows * self.cols
+        self.startX = self.x + self.panelMargin
+        self.startY = self.y + self.topMargin
+    
+        self.scale = 4
+        self.s = self.scale * 16 + 10 # Side length of each block
 
         self.createButtons()
+
+    def createButtons(self):
+        # 3 buttons, left, right, and search
+        side = 32 # side length of each button
+
+        x = self.x + self.buttonMargin
+        y = self.y + self.height // 2
+        inactive = self.icons["inactive-leftButton"]
+        active = self.icons["leftButton"]
+        self.leftButton = ImageButton(x, y, side, side, inactive, active)
+        
+        x = self.x + self.width - self.buttonMargin - 32
+        y = self.y + self.height // 2
+        inactive = self.icons["inactive-rightButton"]
+        active = self.icons["rightButton"]
+        self.rightButton = ImageButton(x, y, side, side, inactive, active)
+
+        x = self.x + self.buttonMargin
+        y = self.y + self.topMargin
+        inactive = self.icons["inactive-search"]
+        active = self.icons["search"]
+        self.searchButton = ImageButton(x, y, side, side, inactive, active)
+
+##################################
+#          App Helpers           #
+##################################
+
+    def checkButtonClick(self, app, x, y):
+        # Check if a button has been clicked on, and perform the acoording action
+        block = None
+
+        if(not self.checkInPanel(x, y)):
+            # Exit tells the app to exit the panel instead of doing nothing
+            return "exit"
+
+        if(self.leftButton.checkInBounds(x, y)):
+            self.start -= self.blocksPerPage
+            if(self.start < 0):
+                self.start += self.blocksPerPage
+
+        elif(self.rightButton.checkInBounds(x, y)):
+            self.start += self.blocksPerPage
+            if(self.start > len(self.blockLst)):
+                self.start -= self.blocksPerPage
+
+        elif(self.searchButton.checkInBounds(x, y)):
+            block = self.search(app)
+
+        else: # Checks the main panel
+            block = self.checkBlockClick(x, y)
+        
+        return block
+
+    def checkInPanel(self, x, y):
+        # Check if the click is inside the panel at all.
+        # if not, the panel should close.
+        x1 = self.x
+        y1 = self.y
+        x2 = self.x + self.width
+        y2 = self.y + self.height
+        return (x > x1 and x < x2 and
+                y > y1 and y < y2)
+
+    def getRowCol(self, x, y):
+        col = x // self.s
+        row = y // self.s
+        return (row, col) 
+
+    def checkBlockClick(self, x, y):
+        # Check if a block has been clicked on, and return the block to App
+        x1 = self.x + self.panelMargin
+        y1 = self.y + self.topMargin
+        x2 = self.x + self.width - self.panelMargin
+        y2 = self.y + self.height - self.topMargin
+        # If the click is inside the main panel but not on any block, skip this.
+        if(not (x > x1 and x < x2 and
+                y > y1 and y < y2)): return None
+
+        newX = x - self.startX
+        newY = y - self.startY
+        row, col = self.getRowCol(newX, newY)
+        blockIndex = row * self.cols + col + self.start
+        return self.blockLst[blockIndex]
+    
+    def search(self, app):
+        # Used for the search button
+        key = app.getUserInput("Input the name of the block:")
+        codeKey = key.lower().replace(' ', '_')
+        if(codeKey in self.blocks):
+            print(self.blocks[codeKey])
+            return self.blocks[codeKey]
+            
+
+##################################
+#            Draw()              #
+##################################
+
+    def draw(self, app, canvas):
+        if(not self.visible): return
+
+        # Draws Panels
+        canvas.create_rectangle(self.x, self.y,
+                                self.x + self.width, self.y + self.height,
+                                fill = self.borderColor,
+                                width = 0)
+        
+        x1 = self.x + self.panelMargin
+        y1 = self.y + self.topMargin
+        x2 = self.x + self.width - self.panelMargin
+        y2 = self.y + self.height - self.topMargin
+        canvas.create_rectangle(x1, y1,
+                                x2, y2,
+                                fill = self.mainColor,
+                                width = 0)
+
+        # Draw Buttons
+        self.leftButton.draw(canvas)
+        self.rightButton.draw(canvas)
+        self.searchButton.draw(canvas)
+
+        # Draw Blocks
+        self.drawBlocks(app, canvas)
+
+    def drawBlocks(self, app, canvas):
+        for i in range(self.start, self.start + self.blocksPerPage):
+            row = (i - self.start) // self.cols
+            col = (i - self.start) % self.cols
+
+            if (i >= len(self.blockLst)): return
+            
+            block = self.blockLst[i]
+            x = col * self.s + self.startX + self.s//2
+            y = row * self.s + self.startY + self.s//2 # Extra to center block
+            block.draw(app, canvas, x, y, self.scale)

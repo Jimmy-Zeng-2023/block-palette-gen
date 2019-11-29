@@ -19,13 +19,12 @@ from tkinter.font import *
 from Block import *
 from TextureReader import *
 from BlockGenerator import *
-from GeneratorMode import *
-from PresetMode import *
+from _GeneratorMode import *
 
-from Buttons_Panels.Buttons import *
-from Buttons_Panels.BlockPanel import *
-from Buttons_Panels.SearchPanel import *
-from Buttons_Panels.PresetPanel import *
+from Buttons import *
+from BlockPanel import *
+from SearchPanel import *
+from PresetPanel import *
 
 #################################################
 #              -= THE PRESET MODE =-

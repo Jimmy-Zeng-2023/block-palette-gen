@@ -19,13 +19,13 @@ from tkinter.font import *
 from Block import *
 from TextureReader import *
 from BlockGenerator import *
-from GeneratorMode import *
-from PresetMode import *
+from _GeneratorMode import *
+from _PresetMode import *
 
-from Buttons_Panels.Buttons import *
-from Buttons_Panels.BlockPanel import *
-from Buttons_Panels.SearchPanel import *
-from Buttons_Panels.PresetPanel import *
+from Buttons import *
+from BlockPanel import *
+from SearchPanel import *
+from PresetPanel import *
 
 #################################################
 # THIS IS THE MAIN FILE TO BE RUN!
@@ -53,12 +53,15 @@ class BlockPaletteGenerator(ModalApp):
             "unlock" : "ui-images/unlock-icon.png",
             "generate" : "ui-images/generate-icon.png",
             "generateButton" : "ui-images/generate-button.png",
+            "leftButton" : "ui-images/LeftArrow.png",
+            "rightButton" : "ui-images/RightArrow.png"
         }
 
         self.ui_images = dict() # Creates a dictionary of the UI images
         for key in self.paths:
             if(key == "textures"): continue
-            elif(key in ["search", "drag", "unlock", "lock"]): # These need additional "grayed out" icons. With separate keys.
+            elif(key in ["search", "drag", "unlock", "lock", "leftButton", "rightButton"]):
+                # These need additional "grayed out" icons. With separate keys.
                 self.createInactiveIcons(key)
             else:
                 self.ui_images[key] = Image.open(self.paths[key]).convert("RGBA")

@@ -33,7 +33,7 @@ class Block(object):
             return f"\n{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
 
     def __str__(self):
-        return f"{self.name} block. Noise = {self.noise}.\n Colors = {self.colors}."
+        return f"{self.name} block. Noise = {self.noise}.\n\tColors = {self.colors}."
 
     def __eq__(self, other):
         return (isinstance(other, Block) and
@@ -43,8 +43,9 @@ class Block(object):
         hashables = (self.name, self.colors, self.noise)
         return hash(hashables)
 
-    def draw(self, app, canvas, x, y, scale):
+    def draw(self, app, canvas, x, y, scale, anchor = 'center'):
         #Advanced: want to draw in 3D w/ 3 images
 
         texture = app.scaleImage(self.textures, scale)
-        canvas.create_image(x, y, image = ImageTk.PhotoImage(texture))
+        canvas.create_image(x, y, image = ImageTk.PhotoImage(texture),
+                            anchor = anchor)

@@ -69,19 +69,22 @@ class BlockPanel(object):
     # Determines which button has been clicked
     def checkInBounds(self, mouseX, mouseY):
         if(self.dragButton.checkInBounds(mouseX, mouseY)):
-            return 1
+            return "drag"
         elif(self.searchButton.checkInBounds(mouseX, mouseY)):
-            return 2
+            return "search"
         elif(self.lockButton.checkInBounds(mouseX, mouseY)):
-            self.isLocked == True
-            self.lockButton.lock()
+            self.lockPanel()
             return "lock"
+
+    def lockPanel(self):
+        self.isLocked == True
+        self.lockButton.lock()
 
     def draw(self, app, canvas, scale = 8):
         canvas.create_rectangle(self.x, self.y,
                                 self.x + self.width, self.y + self.height,
                                 width = 0,
-                                fill = "dark slate blue")
+                                fill = "SlateBlue3")
         canvas.create_text(self.x + self.margins, self.y + self.margins,
                            text = self.convertedName,
                            font = self.nameFont,
@@ -96,3 +99,7 @@ class BlockPanel(object):
     def setBlock(self, block):
         self.block = block
         self.convertedName = TextureReader.convertBlockNames(self.block.name)
+
+    def __eq__(self, other):
+        return (isinstance(other, BlockPanel) and
+               self.x == other.x)

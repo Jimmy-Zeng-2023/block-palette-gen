@@ -26,7 +26,8 @@ class TextureDisplayApp(App):
     def appStarted(self):
         path = "Block-textures-vanilla-1.14.4"
         self.myTextureReader = TextureReader(1, path)
-        self.myBlocks = self.myTextureReader.parseFiles(path)
+        blockDict = self.myTextureReader.parseFiles(path)
+        self.myBlocks = list(blockDict.values())
         self.displayStartIndex = 0
         self.texPerPage = 128
 

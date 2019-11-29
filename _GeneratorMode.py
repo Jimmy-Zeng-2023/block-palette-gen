@@ -19,13 +19,12 @@ from tkinter.font import *
 from Block import *
 from TextureReader import *
 from BlockGenerator import *
-from GeneratorMode import *
-from PresetMode import *
+from _PresetMode import *
 
-from Buttons_Panels.Buttons import *
-from Buttons_Panels.BlockPanel import *
-from Buttons_Panels.SearchPanel import *
-from Buttons_Panels.PresetPanel import *
+from Buttons import *
+from BlockPanel import *
+from SearchPanel import *
+from PresetPanel import *
 
 #################################################
 # TODO: QUESTIONS FOR DINA
@@ -58,7 +57,7 @@ class GeneratorMode(Mode):
         self.blocks = self.myReader.parseFiles(path)
         print("Loading Complete!")
         self.myGen = BlockGenerator(self.blocks)
-        self.state = State([self.blocks[0] for _ in range(5)])
+        self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
 
         self.ui = {
             "smallFont" : "Verdana 10",
@@ -71,11 +70,10 @@ class GeneratorMode(Mode):
         }
 
         self.setBackground()
-        self.topLevelButtons = []
         self.createButtons()
         self.createPanels()
-        self.generatePalette()
         self.createSearchPanel()
+        self.generatePalette()
 
 ##################################
 #     appStarted() Helpers       #
@@ -111,11 +109,24 @@ class GeneratorMode(Mode):
         sprite = self.app.ui_images["generateButton"]
         self.generateButton = ImageButton(x, y, width, height, sprite)
 
-    def createSearchPanel(self): pass
-        # Makes the search panel. but keeps it offscreen (with negative coords?)
+    def createSearchPanel(self):
+        # Makes the search panel. (not visible yet)
+        self.searching = False
+        x = self.ui["panels"][0]
+        y = self.ui["panels"][1] + self.ui["panels"][2] + 20
+        width = self.width - x*2 - 10
+        height = self.height - y - 10
+        self.searchPanel = SearchPanel(x, y, width, height, self.blocks, self.app.ui_images)
+        
+        self.searchingPanel = None # This is the block panel currently searching
 
-    def makeSearchPanelVisible(self): pass
-        # Change the coords on the panel to make it on screen, with extra box towards the panel its changing.
+    def toggleSearchPanel(self):
+        # Make the search panel visible on screen.
+        # TODO: extend the box of the chosen panel to extend as well.
+        self.searchPanel.visible = not self.searchPanel.visible
+        self.searching = not self.searching
+
+        print("search panel toggled!")
 
 ##################################
 #      Controller Helpers        #
@@ -135,7 +146,26 @@ class GeneratorMode(Mode):
         self.app.setActiveMode(self.app.presets)
         self.app.sizeChanged()
     
+    def checkSearching(self, mouseX, mouseY):
+        selectedBlock = self.searchPanel.checkButtonClick(self, mouseX, mouseY)
+        if(selectedBlock == None): return
+        elif(selectedBlock == "exit"):
+            self.toggleSearchPanel()
+        else:
+            # A search has completed
+            print(f"Detected click on {selectedBlock}")
+            self.searchingPanel.setBlock(selectedBlock)
+            self.toggleSearchPanel()
+            
+            #self.searchingPanel.lockPanel()
+            #self.state.printLocked()
+            self.searchingPanel = None
+
     def checkButtons(self, mouseX, mouseY):
+        if(self.searching):
+            # The searching check must run first to stop the panel from closing instantly
+            self.checkSearching(mouseX, mouseY)
+
         if(self.genModeButton.checkInBounds(mouseX, mouseY)):
             pass
         elif(self.presetButton.checkInBounds(mouseX, mouseY)):
@@ -145,23 +175,30 @@ class GeneratorMode(Mode):
 
         for i in range(len(self.panels)):
             panel = self.panels[i]
-            if(panel.checkInBounds(mouseX, mouseY) == "lock"):
+            if(panel == self.searchingPanel):
+                # If the search menu is open on this panel, these buttons won't be visible.
+                pass
+
+            elif(panel.checkInBounds(mouseX, mouseY) == "lock"):
                 if(i not in self.state.locked):
                     self.state.locked.add(i)
                 else:
                     self.state.locked.remove(i)
-            elif(panel.checkInBounds(mouseX, mouseY) == "search"):
-                self.makeSearchPanelVisible()
+                
+                # debug
+                self.state.printLocked()
 
-        # TODO:
-        if(self.searching):
-            self.searchPanel checkinbounds
+            elif(panel.checkInBounds(mouseX, mouseY) == "search"):
+                self.toggleSearchPanel()
+                self.searchingPanel = panel
+            
+            elif(panel.checkInBounds(mouseX, mouseY) == "drag"):
+                pass
     
     def sizeChanged(self):
         if(self.app.width > 900):
             self.createPanels()
             self.createButtons()
-
 
 ##################################
 #     Top Level Controllers      #
@@ -201,6 +238,9 @@ class GeneratorMode(Mode):
         self.presetButton.draw(canvas)
         self.generateButton.draw(canvas)
 
+    def drawSearchPanel(self, canvas):
+        self.searchPanel.draw(self, canvas)
+
     def redrawAll(self, canvas):
         # Background
         self.drawBg(canvas)
@@ -209,3 +249,5 @@ class GeneratorMode(Mode):
         # Buttons
         self.drawButtons(canvas)
         # Animations
+        # Search Panel
+        self.drawSearchPanel(canvas)

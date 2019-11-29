@@ -44,6 +44,10 @@ class State(object):
         toPrint += f"Indices {self.locked} Locked, [{len(self.locked)}/5]"
         return toPrint
 
+    def printLocked(self):
+        # Prints only the info about locked indices
+        print(f"\nIndices {self.locked} Locked, [{len(self.locked)}/5]")
+
 #################################################
 # The BlockGenerator generates matching blocks when provided with
 # a base block. This is the key to the palette generator.
@@ -183,8 +187,8 @@ class BlockGenerator(object):
     # Given a color and a noise, finds the block closest to that color within acceptable noise
     def findBlockFromColor(self, state, newBlocks, color, noise):
         lowest = 255*3
-        lowestBlock = self.blocks[0]
-        for block in self.blocks:
+        lowestBlock = self.blocks["acacia_leaves"]
+        for block in self.blocks.values():
             dR = abs(color[0] - block.colors[0])  
             dG = abs(color[1] - block.colors[1])
             dB = abs(color[2] - block.colors[2])
