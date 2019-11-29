@@ -82,8 +82,14 @@ class LockButton(ImageButton):
 
         super().__init__(x, y, width, height, self.unlockedInactive, self.unlockedActive)
     
-    def lock(self):
+    def lock(self, forceLock = False):
         self.isLocked = not self.isLocked
+
+        if(forceLock): 
+            # Normal lock toggles the lock, forcelock locks the button down.
+            self.setSprites(self.lockedActive, self.lockedActive)
+            return
+
         if(self.isLocked):
             self.setSprites(self.lockedActive, self.lockedActive)
         else:

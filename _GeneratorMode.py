@@ -159,7 +159,7 @@ class GeneratorMode(Mode):
             self.panels[self.searchingIndex].setBlock(selectedBlock)
             self.state.blocks[self.searchingIndex] = selectedBlock
             self.state.locked.add(self.searchingIndex)
-            self.panels[self.searchingIndex].lockPanel()
+            self.panels[self.searchingIndex].lockButton.lock(forceLock = True)
             
             self.toggleSearchPanel()
             self.searchingIndex = None

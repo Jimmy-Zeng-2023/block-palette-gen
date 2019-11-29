@@ -35,7 +35,7 @@ class BlockPanel(object):
         self.block = block
         self.margins = 2
         self.icons = icons # Icons is a dict of icons for the 3 buttons
-        self.isLocked = False
+        self.isLocked = False # Unused Rn. Plan to add texture changes when locked.
         self.isSearching = False
 
         self.nameFont = "Verdana 10 italic"
@@ -76,12 +76,10 @@ class BlockPanel(object):
         elif(self.searchButton.checkInBounds(mouseX, mouseY)):
             return "search"
         elif(self.lockButton.checkInBounds(mouseX, mouseY)):
-            self.lockPanel()
+            self.isLocked = not self.isLocked
+            self.lockButton.lock()
+            print("is this activating???")
             return "lock"
-
-    def lockPanel(self):
-        self.isLocked == True
-        self.lockButton.lock()
 
     def draw(self, app, canvas, scale = 8):
         if(self.isSearching): # When searching, the panel extends to meet with the search panel.
