@@ -36,6 +36,7 @@ class BlockPanel(object):
         self.margins = 2
         self.icons = icons # Icons is a dict of icons for the 3 buttons
         self.isLocked = False
+        self.isSearching = False
 
         self.nameFont = "Verdana 10 italic"
         self.nameColor = "white"
@@ -68,6 +69,8 @@ class BlockPanel(object):
     
     # Determines which button has been clicked
     def checkInBounds(self, mouseX, mouseY):
+        if(self.isSearching): return
+        # When searching, buttons do not function
         if(self.dragButton.checkInBounds(mouseX, mouseY)):
             return "drag"
         elif(self.searchButton.checkInBounds(mouseX, mouseY)):
@@ -81,8 +84,13 @@ class BlockPanel(object):
         self.lockButton.lock()
 
     def draw(self, app, canvas, scale = 8):
+        if(self.isSearching): # When searching, the panel extends to meet with the search panel.
+            y2 = self.y + self.height + 40
+        else:
+            y2 = self.y + self.height
+    
         canvas.create_rectangle(self.x, self.y,
-                                self.x + self.width, self.y + self.height,
+                                self.x + self.width, y2,
                                 width = 0,
                                 fill = "SlateBlue3")
         canvas.create_text(self.x + self.margins, self.y + self.margins,
@@ -92,9 +100,10 @@ class BlockPanel(object):
                            anchor = "nw")
         self.block.draw(app, canvas, self.x + self.width/2, self.y + self.height/2, scale)
         
-        self.dragButton.draw(canvas)
-        self.searchButton.draw(canvas)
-        self.lockButton.draw(canvas)
+        if(not self.isSearching):  # When searching, these buttons should not appear
+            self.dragButton.draw(canvas)
+            self.searchButton.draw(canvas)
+            self.lockButton.draw(canvas)
 
     def setBlock(self, block):
         self.block = block

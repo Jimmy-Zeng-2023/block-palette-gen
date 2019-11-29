@@ -118,15 +118,15 @@ class GeneratorMode(Mode):
         height = self.height - y - 10
         self.searchPanel = SearchPanel(x, y, width, height, self.blocks, self.app.ui_images)
         
-        self.searchingPanel = None # This is the block panel currently searching
+        self.searchingIndex = None # This is the block panel currently searching
 
     def toggleSearchPanel(self):
         # Make the search panel visible on screen.
-        # TODO: extend the box of the chosen panel to extend as well.
+        
+        print(self.searchingIndex)
         self.searchPanel.visible = not self.searchPanel.visible
+        self.panels[self.searchingIndex].isSearching = not self.panels[self.searchingIndex].isSearching
         self.searching = not self.searching
-
-        print("search panel toggled!")
 
 ##################################
 #      Controller Helpers        #
@@ -153,13 +153,16 @@ class GeneratorMode(Mode):
             self.toggleSearchPanel()
         else:
             # A search has completed
+            assert(isinstance(selectedBlock, Block))
             print(f"Detected click on {selectedBlock}")
-            self.searchingPanel.setBlock(selectedBlock)
-            self.toggleSearchPanel()
+
+            self.panels[self.searchingIndex].setBlock(selectedBlock)
+            self.state.blocks[self.searchingIndex] = selectedBlock
+            self.state.locked.add(self.searchingIndex)
+            self.panels[self.searchingIndex].lockPanel()
             
-            #self.searchingPanel.lockPanel()
-            #self.state.printLocked()
-            self.searchingPanel = None
+            self.toggleSearchPanel()
+            self.searchingIndex = None
 
     def checkButtons(self, mouseX, mouseY):
         if(self.searching):
@@ -170,12 +173,13 @@ class GeneratorMode(Mode):
             pass
         elif(self.presetButton.checkInBounds(mouseX, mouseY)):
             self.changeMode()
-        elif(self.generateButton.checkInBounds(mouseX, mouseY)):
+        elif(self.generateButton.checkInBounds(mouseX, mouseY) and not self.searching):
+            # The generate button should be halted as well
             self.generatePalette()
 
         for i in range(len(self.panels)):
             panel = self.panels[i]
-            if(panel == self.searchingPanel):
+            if(i == self.searchingIndex):
                 # If the search menu is open on this panel, these buttons won't be visible.
                 pass
 
@@ -184,13 +188,10 @@ class GeneratorMode(Mode):
                     self.state.locked.add(i)
                 else:
                     self.state.locked.remove(i)
-                
-                # debug
-                self.state.printLocked()
 
             elif(panel.checkInBounds(mouseX, mouseY) == "search"):
+                self.searchingIndex = i
                 self.toggleSearchPanel()
-                self.searchingPanel = panel
             
             elif(panel.checkInBounds(mouseX, mouseY) == "drag"):
                 pass
