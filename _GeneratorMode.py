@@ -65,7 +65,7 @@ class GeneratorMode(Mode):
             "largeFont" : "Verdana 18 bold",
             "genModeButton" : (79, 55, 172, 50),
             "presetButton" : (290, 55, 154, 50),
-            "generateButton" : (690, 430, 200, 50),
+            "generateButton" : (670, 430, 200, 50),
             "panels" : (20, 170, 200)
         }
 
@@ -105,7 +105,7 @@ class GeneratorMode(Mode):
         self.presetButton = ImageButton(x, y, width, height)
 
         x, y, width, height = self.ui["generateButton"]
-        x = self.width - self.ui["panels"][0] - width
+        x = self.width - self.ui["panels"][0] - width - 30
         sprite = self.app.ui_images["generateButton"]
         self.generateButton = ImageButton(x, y, width, height, sprite)
 
@@ -113,7 +113,7 @@ class GeneratorMode(Mode):
         # Makes the search panel. (not visible yet)
         self.searching = False
         x = self.ui["panels"][0]
-        y = self.ui["panels"][1] + self.ui["panels"][2] + 20
+        y = self.ui["panels"][1] + self.ui["panels"][2] + 40
         width = self.width - x*2 - 10
         height = self.height - y - 10
         self.searchPanel = SearchPanel(x, y, width, height, self.blocks, self.app.ui_images)
@@ -122,8 +122,6 @@ class GeneratorMode(Mode):
 
     def toggleSearchPanel(self):
         # Make the search panel visible on screen.
-        
-        print(self.searchingIndex)
         self.searchPanel.visible = not self.searchPanel.visible
         self.panels[self.searchingIndex].isSearching = not self.panels[self.searchingIndex].isSearching
         self.searching = not self.searching
@@ -147,10 +145,13 @@ class GeneratorMode(Mode):
         self.app.sizeChanged()
     
     def checkSearching(self, mouseX, mouseY):
+        # Returns true when the search box has finished
         selectedBlock = self.searchPanel.checkButtonClick(self, mouseX, mouseY)
-        if(selectedBlock == None): return
+        if(selectedBlock == None): return False
         elif(selectedBlock == "exit"):
             self.toggleSearchPanel()
+            self.searchingIndex = None
+            return True
         else:
             # A search has completed
             assert(isinstance(selectedBlock, Block))
@@ -163,16 +164,21 @@ class GeneratorMode(Mode):
             
             self.toggleSearchPanel()
             self.searchingIndex = None
+            return True
 
     def checkButtons(self, mouseX, mouseY):
+        searchFinish = False
         if(self.searching):
             # The searching check must run first to stop the panel from closing instantly
-            self.checkSearching(mouseX, mouseY)
+            searchFinish = self.checkSearching(mouseX, mouseY)
 
         if(self.genModeButton.checkInBounds(mouseX, mouseY)):
             pass
         elif(self.presetButton.checkInBounds(mouseX, mouseY)):
             self.changeMode()
+        elif(searchFinish): return
+            # If the search finished, end here
+         
         elif(self.generateButton.checkInBounds(mouseX, mouseY) and not self.searching):
             # The generate button should be halted as well
             self.generatePalette()
@@ -181,7 +187,7 @@ class GeneratorMode(Mode):
             panel = self.panels[i]
             if(i == self.searchingIndex):
                 # If the search menu is open on this panel, these buttons won't be visible.
-                pass
+                continue
 
             elif(panel.checkInBounds(mouseX, mouseY) == "lock"):
                 if(i not in self.state.locked):
@@ -213,7 +219,9 @@ class GeneratorMode(Mode):
             self.generatePalette()
     
     def mousePressed(self, event):
-        print(event.x, event.y)
+        
+        #print(event.x, event.y)
+        #print(self.searching, self.searchingIndex)
         self.checkButtons(event.x, event.y)
 
 ##################################

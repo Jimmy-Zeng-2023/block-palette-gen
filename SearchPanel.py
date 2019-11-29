@@ -35,9 +35,9 @@ class SearchPanel(object):
         self.blocks = blocks 
         self.blockLst = list(self.blocks.values()) # blocks needs to be converted to an iterable list
 
-        self.topMargin = 5 # Margin for the main list vertically
+        self.topMargin = 10 # Margin for the main list vertically
         self.buttonMargin = 5 # Margin for the buttons
-        self.panelMargin = 38 # Margin for the main list
+        self.panelMargin = 42 # Margin for the main list
         self.borderColor = "SlateBlue3"
         self.mainColor = "SlateBlue4"
 
@@ -45,16 +45,18 @@ class SearchPanel(object):
 
         self.visible = False
         self.start = 0
-        self.rows = 4
-        self.cols = 10
+        self.rows = 3
+        self.cols = 9
         self.blocksPerPage = self.rows * self.cols
         self.startX = self.x + self.panelMargin
         self.startY = self.y + self.topMargin
     
         self.scale = 4
-        self.s = self.scale * 16 + 10 # Side length of each block
+        #self.s = self.scale * 16 + 10 # Side length of each block
+        self.s = self.width // (self.cols + 1)
 
         self.createButtons()
+        self.makeSimpleBlocks() # A dictionary with easier to spell names
 
     def createButtons(self):
         # 3 buttons, left, right, and search
@@ -142,11 +144,21 @@ class SearchPanel(object):
     def search(self, app):
         # Used for the search button
         key = app.getUserInput("Input the name of the block:")
-        codeKey = key.lower().replace(' ', '_')
-        if(codeKey in self.blocks):
-            print(self.blocks[codeKey])
-            return self.blocks[codeKey]
-            
+        userKey = key.lower().replace(' ', '') # Capitals and spaces don't matter
+        if(userKey in self.simpleBlocks):
+            return self.simpleBlocks[userKey]
+
+    def makeSimpleBlocks(self):
+        self.simpleBlocks = dict() # Names of the blocks are trimmed and made simpler
+        for key in self.blocks:
+            block = self.blocks[key]
+            convertedKey = key.lower()
+            convertedKey = convertedKey.replace('_', '')
+            self.simpleBlocks[convertedKey] = block
+
+            if("block" in convertedKey):
+                convertedKey1 = convertedKey.replace('block', '')
+                self.simpleBlocks[convertedKey1] = block
 
 ##################################
 #            Draw()              #

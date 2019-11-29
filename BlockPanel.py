@@ -78,7 +78,6 @@ class BlockPanel(object):
         elif(self.lockButton.checkInBounds(mouseX, mouseY)):
             self.isLocked = not self.isLocked
             self.lockButton.lock()
-            print("is this activating???")
             return "lock"
 
     def draw(self, app, canvas, scale = 8):

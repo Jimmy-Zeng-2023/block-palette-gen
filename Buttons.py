@@ -89,6 +89,8 @@ class LockButton(ImageButton):
             # Normal lock toggles the lock, forcelock locks the button down.
             self.setSprites(self.lockedActive, self.lockedActive)
             return
+        # Had a strange but that the forcelock would activate but the the unlocked sprite
+        # still loads. Workaround was to make forcelock shut down the function completely.
 
         if(self.isLocked):
             self.setSprites(self.lockedActive, self.lockedActive)
