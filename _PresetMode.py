@@ -44,11 +44,22 @@ class PresetMode(Mode):
             "medFont" : "Verdana 12 bold",
             "largeFont" : "Verdana 18 bold",
             "genModeButton" : (79, 55, 172, 50),
-            "presetButton" : (290, 55, 154, 50)
+            "presetButton" : (290, 55, 154, 50),
+            "margins" : (30, 170, 100, 110)
+            #            Left, top, height, gap
+        }
+        
+        self.presetsDict = {
+            "Futuristic" : ["quartz_block_top", "quartz_pillar", "cyan_terracotta", "blue_terracotta", "red_terracotta"],
+            "Medieval" : ["spruce_log", "spruce_planks", "oak_planks", "cobblestone", "stone_bricks"],
+            "Atlantian" : ["prismarine", "sea_lantern", "dark_prismarine", "stripped_birch_log", "brain_coral_block"],
+            "Desert" : ["sandstone", "cut_sandstone", "terracotta", "chiseled_red_sandstone", "spruce_log"],
+            "Arctic" : ["packed_ice", "blue_ice", "snow", "cobblestone", "stone_bricks"]
         }
 
         self.setBackground()
         self.createButtons()
+        self.createPresetPanels()
 
 ##################################
 #     appStarted() Helpers       #
@@ -65,6 +76,28 @@ class PresetMode(Mode):
         x, y, width, height = self.ui["presetButton"]
         self.presetButton = ImageButton(x, y, width, height)
 
+    def createPresetPanels(self):
+        # "Medieval" : [acacia_leaves, oak_log...]
+        presetsDict = self.presetsDict
+        self.presetPanels = []
+
+        
+        leftMargin, topMargin, panelHeight, gap = self.ui["margins"]
+        panelWidth = self.width - 2 * leftMargin
+
+        for name in presetsDict:
+            blockNames = presetsDict[name] # List of strings
+            blocks = self.search(blockNames)
+            newPanel = PresetPanel(panelWidth, panelHeight, blocks, name)
+            self.presetPanels.append(newPanel)
+
+    def search(self, blockNames): # blockNames is a list of strings
+        blocks = []
+        for name in blockNames:
+            if(name in self.app.blocks):
+                blocks.append(self.app.blocks[name])
+        return blocks
+
 ##################################
 #      Controller Helpers        #
 ##################################
@@ -79,12 +112,27 @@ class PresetMode(Mode):
         elif(self.presetButton.checkInBounds(mouseX, mouseY)):
             pass
 
+    def checkPanels(self, mouseX, mouseY):
+        for presetPanel in self.presetPanels:
+            selected = presetPanel.checkInBounds(mouseX, mouseY)
+            if(selected != None):
+                self.updateState(selected)
+
+    def updateState(self, blocks):
+        self.app.state.blocks = blocks
+        #self.app.state.locked = set()
+        self.app.generator.updatePanels()
+        self.app.generator.endSearch()
+        self.app.setActiveMode(self.app.generator)
+        
 ##################################
 #     Top Level Controllers      #
 ##################################
 
     def mousePressed(self, event):
+        print("Mouse clicked:", event.x, event.y)
         self.checkButtons(event.x, event.y)
+        self.checkPanels(event.x, event.y)
 
 ##################################
 #         View Functions         #
@@ -104,6 +152,15 @@ class PresetMode(Mode):
         self.genModeButton.draw(canvas)
         self.presetButton.draw(canvas)
 
+    def drawPresetPanels(self, canvas):
+        leftMargin, topMargin, panelHeight, gap = self.ui["margins"]
+        x = leftMargin
+        y = topMargin
+        for presetPanel in self.presetPanels:
+            presetPanel.draw(self, canvas, x, y)
+            y += gap
+
     def redrawAll(self, canvas):
         self.drawBg(canvas)
+        self.drawPresetPanels(canvas)
         self.drawButtons(canvas)

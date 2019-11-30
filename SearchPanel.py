@@ -32,13 +32,13 @@ class SearchPanel(object):
         self.y = y
         self.width = width
         self.height = height
-        self.blocks = blocks 
+        self.blocks = blocks
         self.blockLst = list(self.blocks.values()) # blocks needs to be converted to an iterable list
 
         self.topMargin = 10 # Margin for the main list vertically
         self.buttonMargin = 5 # Margin for the buttons
         self.panelMargin = 42 # Margin for the main list
-        self.borderColor = "SlateBlue3"
+        self.borderColor = "gray20"
         self.mainColor = "SlateBlue4"
 
         self.icons = icons # Icons is the ui_images dictionary
@@ -52,8 +52,9 @@ class SearchPanel(object):
         self.startY = self.y + self.topMargin
     
         self.scale = 4
-        #self.s = self.scale * 16 + 10 # Side length of each block
-        self.s = self.width // (self.cols + 1)
+        # Side length of each block
+        self.cellWidth = (self.width - 2 * self.panelMargin) // self.cols
+        self.cellHeight = (self.height - 2 * self.topMargin) // self.rows
 
         self.createButtons()
         self.makeSimpleBlocks() # A dictionary with easier to spell names
@@ -121,8 +122,8 @@ class SearchPanel(object):
                 y > y1 and y < y2)
 
     def getRowCol(self, x, y):
-        col = x // self.s
-        row = y // self.s
+        col = x // self.cellWidth
+        row = y // self.cellHeight
         return (row, col) 
 
     def checkBlockClick(self, x, y):
@@ -198,6 +199,6 @@ class SearchPanel(object):
             if (i >= len(self.blockLst)): return
             
             block = self.blockLst[i]
-            x = col * self.s + self.startX + self.s//2
-            y = row * self.s + self.startY + self.s//2 # Extra to center block
+            x = col * self.cellWidth + self.startX + self.cellWidth//2
+            y = row * self.cellHeight + self.startY + self.cellHeight//2 # Extra to center block
             block.draw(app, canvas, x, y, self.scale)

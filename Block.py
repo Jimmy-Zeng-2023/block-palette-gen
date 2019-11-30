@@ -43,9 +43,30 @@ class Block(object):
         hashables = (self.name, self.colors, self.noise)
         return hash(hashables)
 
+    @staticmethod
+    def getWidth(): # Function used by: PresetPanel.py
+        return 16
+
+    # From Class Notes: Animations Part 2, with modifications
+    def getCachedPhotoImage(self, app, image, scale):
+        if("cached" not in image.__dict__):
+            # Case 1: no cached images at all
+            # Solution - Make the dictionary
+            image.cached = dict()
+
+        if(scale not in image.cached):
+            # Case 2: there are cached images, but not of the correct size
+            # Solution, actually caches the image
+            resizedImage = app.scaleImage(image, scale)
+            photoImage = ImageTk.PhotoImage(resizedImage) # Actually makes it
+            image.cached[scale] = photoImage
+
+        return image.cached[scale]
+
+
     def draw(self, app, canvas, x, y, scale, anchor = 'center'):
         #Advanced: want to draw in 3D w/ 3 images
-
+        photoImage = self.getCachedPhotoImage(app, self.textures, scale)
         texture = app.scaleImage(self.textures, scale)
-        canvas.create_image(x, y, image = ImageTk.PhotoImage(texture),
+        canvas.create_image(x, y, image = photoImage,
                             anchor = anchor)

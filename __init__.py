@@ -66,11 +66,19 @@ class BlockPaletteGenerator(ModalApp):
             else:
                 self.ui_images[key] = Image.open(self.paths[key]).convert("RGBA")
 
+        self.createReaderAndGenerator()
         self.generator = GeneratorMode()
         self.presets = PresetMode()
         self.setActiveMode(self.generator)
-        self.state = State([], [])
         self.timerDelay = 1000
+
+    def createReaderAndGenerator(self):
+        path = self.paths["textures"]
+        self.myReader = TextureReader(50, path)
+        self.blocks = self.myReader.parseFiles(path)
+        print("Texture Loading Complete!")
+        self.myGen = BlockGenerator(self.blocks)
+        self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
 
     def createInactiveIcons(self, key):
         activeIcon = Image.open(self.paths[key]).convert("RGBA")

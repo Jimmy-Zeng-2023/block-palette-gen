@@ -124,7 +124,7 @@ class BlockPanel(object):
         canvas.create_rectangle(x, self.y,
                                 x + self.width, y2,
                                 width = 0,
-                                fill = "SlateBlue3")
+                                fill = "gray20")
         canvas.create_text(x + self.margins, self.y + self.margins,
                            text = self.convertedName,
                            font = self.nameFont,

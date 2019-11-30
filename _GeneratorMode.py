@@ -52,12 +52,10 @@ class GeneratorMode(Mode):
     # Final frontend app
     def appStarted(self):
 
-        path = self.app.paths["textures"]
-        self.myReader = TextureReader(50, path)
-        self.blocks = self.myReader.parseFiles(path)
-        print("Loading Complete!")
-        self.myGen = BlockGenerator(self.blocks)
-        self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
+        #path = self.app.paths["textures"]
+        #self.myReader = TextureReader(50, path)
+        self.blocks = self.app.blocks
+        self.myGen = self.app.myGen
 
         self.ui = {
             "smallFont" : "Verdana 10",
@@ -93,7 +91,7 @@ class GeneratorMode(Mode):
         panelX, panelY, panelHeight = self.ui["panels"]
         panelWidth = (self.width - 2*panelX) // 5
         
-        for block in self.state.blocks:
+        for block in self.app.state.blocks:
             panel = BlockPanel(panelX, panelY,
                                panelWidth - 10,
                                panelHeight,
@@ -133,18 +131,25 @@ class GeneratorMode(Mode):
         self.panels[self.searchingIndex].isSearching = not self.panels[self.searchingIndex].isSearching
         self.searching = not self.searching
 
+    def endSearch(self): # Terminates a search
+        if(self.searching):
+            self.searching = False
+            self.searchPanel.visible = False
+            self.panels[self.searchingIndex].isSearching = False
+            self.searchingIndex = None
+
 ##################################
 #      Controller Helpers        #
 ##################################
 
     def updatePanels(self):
-        for i in range(len(self.state.blocks)):
-            block = self.state.blocks[i]
+        for i in range(len(self.app.state.blocks)):
+            block = self.app.state.blocks[i]
             panel = self.panels[i]
             panel.setBlock(block)
 
     def generatePalette(self):
-        self.state = self.myGen.generate(self.state)
+        self.app.state = self.myGen.generate(self.app.state)
         self.updatePanels()
 
     def changeMode(self):
@@ -165,12 +170,11 @@ class GeneratorMode(Mode):
             print(f"Detected click on {selectedBlock}")
 
             self.panels[self.searchingIndex].setBlock(selectedBlock)
-            self.state.blocks[self.searchingIndex] = selectedBlock
-            self.state.locked.add(self.searchingIndex)
+            self.app.state.blocks[self.searchingIndex] = selectedBlock
+            self.app.state.locked.add(self.searchingIndex)
             self.panels[self.searchingIndex].lockButton.lock(forceLock = True)
             
-            self.toggleSearchPanel()
-            self.searchingIndex = None
+            self.endSearch()
             return True
 
     def checkButtons(self, mouseX, mouseY):
@@ -197,10 +201,11 @@ class GeneratorMode(Mode):
                 continue
 
             elif(panel.checkInBounds(mouseX, mouseY) == "lock"):
-                if(i not in self.state.locked):
-                    self.state.locked.add(i)
+                print(self.app.state.locked)
+                if(i not in self.app.state.locked):
+                    self.app.state.locked.add(i)
                 else:
-                    self.state.locked.remove(i)
+                    self.app.state.locked.remove(i)
 
             elif(panel.checkInBounds(mouseX, mouseY) == "search"):
                 self.searchingIndex = i
@@ -262,7 +267,6 @@ class GeneratorMode(Mode):
 
 
     def mouseReleased(self, event):
-        print("mouse released")
         if(self.dragPanel != None):
             # Snaps the current panel to the grid
             self.dragPanel.deltaX = event.x - self.dragStart
@@ -281,6 +285,11 @@ class GeneratorMode(Mode):
         if(self.app.width > 900):
             self.createPanels()
             self.createButtons()
+
+            # Just so the panel doesn't destroy the info
+            #prevStats = self.searching, self.searchingIndex, self.searchPanel.visible
+            self.createSearchPanel()
+            #self.searching, self.searchingIndex, self.searchPanel.visible = prevStats
 
 ##################################
 #         View Functions         #

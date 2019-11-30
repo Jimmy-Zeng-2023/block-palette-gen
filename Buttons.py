@@ -32,15 +32,6 @@ class ImageButton(object):
         self.y = y
         self.width = width
         self.height = height
-
-        '''WHRatio = sprite.width // sprite.height
-        if(width > height):
-            width = height * WHRatio
-        else:
-            height = width // WHRatio
-        ratio = (width, height)
-
-        self.sprite = sprite.resize(ratio)'''
         self.sprite = sprite
         
         if(activeSprite != None):
