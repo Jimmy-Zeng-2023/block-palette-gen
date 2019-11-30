@@ -203,6 +203,7 @@ spruce_sapling
 stonecutter_saw
 stonecutter_side
 stonecutter_top
+stonecutter_bottom
 sugar_cane
 sunflower_back
 sunflower_bottom

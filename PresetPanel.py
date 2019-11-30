@@ -34,9 +34,10 @@ class PresetPanel(object):
             self.nameFont = "Verdana 20 bold italic"
             self.nameColor = "white"
 
-            self.color = "SlateBlue4" #SlateBlue4"
+            self.color = "gray20" #SlateBlue4"
+            self.color2 = "SlateBlue4"
             self.scale = 5 # Scale for the blocks to be drawn at
-            self.blockGap = 10
+            self.blockGap = 20
             self.textX = 10
             self.topMargin = 5
             self.blockX = 220
@@ -58,6 +59,10 @@ class PresetPanel(object):
         canvas.create_rectangle(x, y,
                                 x + self.width, y + self.height,
                                 fill = self.color,
+                                width = 0)
+        canvas.create_rectangle(x + 5, y + 5,
+                                x + self.width - 10, y + self.height - 10,
+                                fill = self.color2,
                                 width = 0)
 
         canvas.create_text(x + self.textX,

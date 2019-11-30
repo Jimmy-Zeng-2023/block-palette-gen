@@ -21,6 +21,11 @@ def readFile(path):
     with open(path, "rt") as f:
         return f.read()
 
+## From Class Notes: Graphics Part 2
+def rgbString(red, green, blue):
+    # Don't worry about how this code works yet.
+    return "#%02x%02x%02x" % (red, green, blue)
+
 #################################################
 # The TextureReader takes in the raw textures, derive their colors and noise
 # factors, and organizes them for the rest of the classes.
@@ -35,6 +40,20 @@ class TextureReader(object):
         self.blacklistPath = "blacklist.txt"
         self.getBlackList()
 
+        # For greenery and foilage. See addGreenLayer()
+        
+        self.foilage = {"oak_leaves", "birch_leaves", "spruce_leaves",
+                        "jungle_leaves", "dark_oak_leaves", "acacia_leaves"}
+        self.foilageColors = {
+            "grass" : (1,1,1),
+            "oak_leaves" : (70/186, 103/186, 28/186),
+            "birch_leaves" : (75/184, 99/184, 50/184),
+            "spruce_leaves" : (47/154, 74/154, 47/154),
+            "jungle_leaves" : (36/218, 132/218, 6/218),
+            "dark_oak_leaves" : (52/184, 103/184, 28/184),
+            "acacia_leaves" : (101/181, 95/181, 25/181)
+        }
+
     def getBlackList(self):
         self.blacklist = set()
         blacklistStr = readFile(self.blacklistPath)
@@ -42,11 +61,10 @@ class TextureReader(object):
             self.blacklist.add(name)
 
     def parseFiles(self, path):
+        # Similar to the listFiles() function from Class Notes: Recursion Part 2
+        # Recursively searches target path and load the blocks into a dictionary
         blocks = dict()
-        # Follow the format in class, base case -> finds a png file
-        # Files are currently stored as a list of Block objects,
-        # in the future I will emigrate to a dictionary structure
-
+        
         if(os.path.isfile(path)):
             (head, fileName) = os.path.split(path)
             splitFileName = fileName.split('.')
@@ -57,13 +75,16 @@ class TextureReader(object):
                 texture = Image.open(path).convert("RGBA")
                 sideLength = texture.width
                 texture = texture.crop((0, 0, sideLength, sideLength))
+                
+                if(name in self.foilage):
+                    # Vegetation blocks (leaves and grass) are stored as grayscale files
+                    # by Minecraft. We need to add the green color manually.
+                    texture = self.addGreenLayer(name, texture)
                 colors, noise = self.getColorsAndNoise(texture)
 
                 return {name : Block(name, colors, noise, texture)}
-                #return [Block(name, colors, noise, texture)]
             else:
                 return dict()
-                #return []
         else:
             for fileName in os.listdir(path):
                 subBlocks = self.parseFiles(path + os.sep + fileName)
@@ -120,6 +141,57 @@ class TextureReader(object):
             return 0
         else:
             return len(colorLst)
+
+    def addGreenLayer(self, name, texture):
+        # Vegetation blocks (leaves and grass) are stored as grayscale files
+        # by Minecraft. We need to add the green color manually.
+        
+        #for key in self.foilageColors
+        #colorStr = rgbString(color)
+
+        #greenLayer = Image.new('RGBA', texture.size, color)
+        #mask = Image.new('RGBA', texture.size, (0, 0, 0, 123))
+        #coloredTexture = Image.composite(greenLayer, texture, texture)
+        
+        #newTexture = Image.alpha_composite(texture, coloredTexture)
+        #newTexture = Image.blend(texture, coloredTexture, 0.4).convert('RGBA')
+        #newTexture = Image.composite(texture, coloredTexture, mask)
+
+        
+
+        # convert to L and make big color palette between 2 values I guess
+        # go thru L and convert int to RGBs
+
+        color = self.foilageColors[name]
+
+        texture = texture.convert('L')
+        texture2 = Image.new('RGBA', texture.size, (0,0,0,0))
+
+        pixdata = texture.load()
+        pixdata2 = texture2.load()
+
+        width, height = texture.size
+        for y in range(height):
+            for x in range(width):
+                if pixdata[x, y] == 0:
+                    pixdata2[x, y] = (0,0,0,0)
+                else:
+                    factor = pixdata[x, y]
+                    R = int(color[0] * factor)
+                    G = int(color[1] * factor)
+                    B = int(color[2] * factor)
+
+                    if(R > 255): R = 255
+                    if(G > 255): G = 255
+                    if(B > 255): B = 255
+                    pixdata2[x, y] = (R, G, B, 255)
+
+        texture.close()
+        #print(name)
+        #print(texture.getcolors())
+
+        return texture2
+
 
     @staticmethod
     def convertBlockNames(name):
