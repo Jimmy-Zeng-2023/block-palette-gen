@@ -185,6 +185,8 @@ class BlockGenerator(object):
     def findTriadics(self): pass
 
     # Given a color and a noise, finds the block closest to that color within acceptable noise
+    
+    # TODO: Take into consideration all 2 / 3 colors
     def findBlockFromColor(self, state, newBlocks, color, noise):
         lowest = 255*3
         lowestBlock = self.blocks["acacia_leaves"]

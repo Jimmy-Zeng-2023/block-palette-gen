@@ -100,6 +100,8 @@ class TextureReader(object):
         
 
     def getPrimaryColor(self, colorLst):
+        # TODO: To be able to get the top 2 / 3 colors
+
         # Sorts the list of tuples by only the count element
         sortedColorLst = sorted(colorLst, key = itemgetter(0))
         mergedColors = dict()
