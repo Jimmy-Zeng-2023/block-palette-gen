@@ -14,17 +14,11 @@ from Block import *
 from operator import itemgetter # Itemgetter class
 import random, math, copy, string, time, os
 
-# TODO: Switch to dict based data structure
 
 ## From Class Notes: Strings, Basic File I/O
 def readFile(path):
     with open(path, "rt") as f:
         return f.read()
-
-## From Class Notes: Graphics Part 2
-def rgbString(red, green, blue):
-    # Don't worry about how this code works yet.
-    return "#%02x%02x%02x" % (red, green, blue)
 
 #################################################
 # The TextureReader takes in the raw textures, derive their colors and noise
@@ -72,14 +66,17 @@ class TextureReader(object):
             extension = splitFileName[-1]
             # We dont want .mcMeta files (yet), those are for animated textures
             if(extension == 'png' and name not in self.blacklist):
-                texture = Image.open(path).convert("RGBA")
-                sideLength = texture.width
-                texture = texture.crop((0, 0, sideLength, sideLength))
                 
                 if(name in self.foilage):
                     # Vegetation blocks (leaves and grass) are stored as grayscale files
                     # by Minecraft. We need to add the green color manually.
+                    texture = Image.open(path).convert("L")
                     texture = self.addGreenLayer(name, texture)
+                else:
+                    texture = Image.open(path).convert("RGBA")
+
+                sideLength = texture.width
+                texture = texture.crop((0, 0, sideLength, sideLength))
                 colors, noise = self.getColorsAndNoise(texture)
 
                 return {name : Block(name, colors, noise, texture)}
@@ -146,22 +143,6 @@ class TextureReader(object):
         # Vegetation blocks (leaves and grass) are stored as grayscale files
         # by Minecraft. We need to add the green color manually.
         
-        #for key in self.foilageColors
-        #colorStr = rgbString(color)
-
-        #greenLayer = Image.new('RGBA', texture.size, color)
-        #mask = Image.new('RGBA', texture.size, (0, 0, 0, 123))
-        #coloredTexture = Image.composite(greenLayer, texture, texture)
-        
-        #newTexture = Image.alpha_composite(texture, coloredTexture)
-        #newTexture = Image.blend(texture, coloredTexture, 0.4).convert('RGBA')
-        #newTexture = Image.composite(texture, coloredTexture, mask)
-
-        
-
-        # convert to L and make big color palette between 2 values I guess
-        # go thru L and convert int to RGBs
-
         color = self.foilageColors[name]
 
         texture = texture.convert('L')
@@ -171,24 +152,25 @@ class TextureReader(object):
         pixdata2 = texture2.load()
 
         width, height = texture.size
+
+        # Code Idea borrowed from: 
+        # https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent
+        # 
+        # This loops through all the pixels and transforms the Luminosity values
+        # to RGBA values according to the colors defined in self.foilageColors.
         for y in range(height):
             for x in range(width):
                 if pixdata[x, y] == 0:
+                    # 0 = Completely black
                     pixdata2[x, y] = (0,0,0,0)
                 else:
                     factor = pixdata[x, y]
                     R = int(color[0] * factor)
                     G = int(color[1] * factor)
                     B = int(color[2] * factor)
-
-                    if(R > 255): R = 255
-                    if(G > 255): G = 255
-                    if(B > 255): B = 255
                     pixdata2[x, y] = (R, G, B, 255)
 
         texture.close()
-        #print(name)
-        #print(texture.getcolors())
 
         return texture2
 
