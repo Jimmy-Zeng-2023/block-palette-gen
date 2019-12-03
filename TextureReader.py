@@ -36,10 +36,11 @@ class TextureReader(object):
 
         # For greenery and foilage. See addGreenLayer()
         
-        self.foilage = {"oak_leaves", "birch_leaves", "spruce_leaves",
+        self.foilage = {"grass_block_top",
+                        "oak_leaves", "birch_leaves", "spruce_leaves",
                         "jungle_leaves", "dark_oak_leaves", "acacia_leaves"}
         self.foilageColors = {
-            "grass" : (1,1,1),
+            "grass_block_top" : (153/195, 203/195, 108/195),
             "oak_leaves" : (70/186, 103/186, 28/186),
             "birch_leaves" : (75/184, 99/184, 50/184),
             "spruce_leaves" : (47/154, 74/154, 47/154),
@@ -95,10 +96,8 @@ class TextureReader(object):
         #(colors too close together are ignored)
 
         colorLst = texture.getcolors() # Gets a list of all the colors
-        noise = self.getNoise(colorLst)
-        color = self.getPrimaryColor(colorLst)
-        return color, noise
-        
+        color, noise = self.getPrimaryColor(colorLst)
+        return color, noise    
 
     def getPrimaryColor(self, colorLst):
         # TODO: To be able to get the top 2 / 3 colors
@@ -106,21 +105,41 @@ class TextureReader(object):
         # Sorts the list of tuples by only the count element
         sortedColorLst = sorted(colorLst, key = itemgetter(0))
         mergedColors = dict()
-        # Reverse loops through the list (greatest to least) and combine colors too close (based on the epsilon)
-        for i in range(len(sortedColorLst)-1, 0, -1):
-            count = sortedColorLst[i][0]
-            color = sortedColorLst[i][1]
+
+        # Reverse loops through the list (greatest to least)
+        for i in range(len(sortedColorLst) - 1, 0, -1):
+            mergeCount = sortedColorLst[i][0]
+            mergeColor = sortedColorLst[i][1]
+            colorMerged = False
+
             for key in mergedColors:
-                dR = abs(key[0] - color[0])
-                dG = abs(key[1] - color[1])
-                dB = abs(key[2] - color[2])
+                # Loops through the merged list and attempts to merge
+                
+                color = key
+                count = mergedColors[key]
+                
+                dR = abs(color[0] - mergeColor[0])
+                dG = abs(color[1] - mergeColor[1])
+                dB = abs(color[2] - mergeColor[2])
                 dColor = dR + dG + dB
                 if(dColor < self.colorEpsilon):
-                    mergedColors[key] += count
-            mergedColors[color] = count
-        
+                    # If the colors are too close together, merge the counts
+                    mergedColors[color] += mergeCount
+
+                    colorMerged = True
+                    break
+                    # Break so the same color cannot merge onto multiple colors
+            
+            # If the color is not merged after looping through everything, its copied over
+            if(colorMerged == False):
+                mergedColors[mergeColor] = mergeCount
+            
+
+        # Noise getting is moved here
+        noise = len(mergedColors)
+
         # Then, check the color with the greatest number of combined counts
-        return self.getMode(mergedColors)
+        return self.getMode(mergedColors), noise
     
     def getMode(self, mergedColors):
         highest = 0
@@ -134,18 +153,18 @@ class TextureReader(object):
                 highestColor = key
         return highestColor
 
-    def getNoise(self, colorLst):
+    '''def getNoise(self, colorLst):
         # Noise is defined by how many total colors there are in a texture
         # (For now)
         if(colorLst == None):
             return 0
         else:
-            return len(colorLst)
+            return len(colorLst)'''
 
     def addGreenLayer(self, name, texture):
         # Vegetation blocks (leaves and grass) are stored as grayscale files
         # by Minecraft. We need to add the green color manually.
-        
+
         color = self.foilageColors[name]
 
         texture = texture.convert('L')

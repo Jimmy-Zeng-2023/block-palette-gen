@@ -54,13 +54,15 @@ class State(object):
 #################################################
 class BlockGenerator(object):
     # This function is responsible for generating the blocks
-    def __init__(self, blocks, noiseEpsilon = 10):
+    def __init__(self, blocks, noiseEpsilon):
         self.blocks = blocks
         self.noiseEpsilon = noiseEpsilon
         self.placeholder = Block("placeholder",
                                   (0, 0, 0),
                                   0,
                                   Image.new("RGBA", (1, 1)))
+        # Toggle this to continueously print the state every generation
+        self.printState = False
 
     # Generates a new State 
     def generate(self, state):
@@ -90,7 +92,8 @@ class BlockGenerator(object):
         
         
         result = State(newBlocks, locked)
-        print(result)
+        
+        if(self.printState): print(result)
         return result
 
     def generateRandomBlock(self, state, newBlocks):
@@ -200,6 +203,19 @@ class BlockGenerator(object):
                block not in state.blocks and
                dColor < lowest and
                dNoise < self.noiseEpsilon):
+                lowest = dColor
+                lowestBlock = block
+
+        # If there still isn't a block, remove noise as a factor
+        for block in self.blocks.values():
+            dR = abs(color[0] - block.colors[0])  
+            dG = abs(color[1] - block.colors[1])
+            dB = abs(color[2] - block.colors[2])
+            dColor = dR + dG + dB
+            dNoise = abs(block.noise - noise)
+            if(block not in newBlocks and
+               block not in state.blocks and
+               dColor < lowest):
                 lowest = dColor
                 lowestBlock = block
         return lowestBlock

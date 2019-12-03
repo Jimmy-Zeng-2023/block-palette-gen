@@ -45,7 +45,7 @@ class PresetMode(Mode):
             "largeFont" : "Verdana 18 bold",
             "genModeButton" : (79, 55, 172, 50),
             "presetButton" : (290, 55, 154, 50),
-            "margins" : (30, 170, 100, 110)
+            "margins" : (20, 150, 100, 110)
             #            Left, top, height, gap
         }
         
@@ -120,7 +120,7 @@ class PresetMode(Mode):
 
     def updateState(self, blocks):
         self.app.state.blocks = blocks
-        #self.app.state.locked = set()
+        #self.app.state.locked = {0, 1, 2, 3, 4}
         self.app.generator.updatePanels()
         self.app.generator.endSearch()
         self.app.setActiveMode(self.app.generator)

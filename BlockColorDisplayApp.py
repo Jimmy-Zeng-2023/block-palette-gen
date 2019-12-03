@@ -30,7 +30,7 @@ def rgbString(red, green, blue):
 class ColorDisplayApp(App):
     def appStarted(self):
         path = "Block-textures-vanilla-1.14.4"
-        self.reader = TextureReader(50, path)
+        self.reader = TextureReader(100, path)
         blockDict = self.reader.parseFiles(path)
         self.blocks = list(blockDict.values())
         print("Loading Complete!")

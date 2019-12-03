@@ -77,7 +77,7 @@ class BlockPaletteGenerator(ModalApp):
         self.myReader = TextureReader(50, path)
         self.blocks = self.myReader.parseFiles(path)
         print("Texture Loading Complete!")
-        self.myGen = BlockGenerator(self.blocks)
+        self.myGen = BlockGenerator(self.blocks, noiseEpsilon = 2)
         self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
 
     def createInactiveIcons(self, key):

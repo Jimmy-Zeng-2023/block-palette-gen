@@ -23,7 +23,7 @@ class Block(object):
         self.name = name
         self.colors = colors # Color is a set of the most prominant colors
                              # Each color is a tuple of (R, G, B) or (R, G, B, A)
-        self.noise = noise # Noise is a number 1-10 that classifies the level of noise
+        self.noise = noise # Noise is a number that classifies the level of noise
         
         # Textures is an list of images corresponding to the top, left, and right faces
         # self.texture stores the transformed cube image
@@ -94,9 +94,12 @@ class Block(object):
         # Pastes the sides into the background
         bg.paste(side2, (0, 8*scale), mask = side2)
         bg.paste(side3, (16*scale, 8*scale), mask = side3)
-        bg.paste(side1, mask = side1)
-
-        #self.clearBackground(bg)
+        
+        # TODO: This will be just grass path
+        if(self.name == "grass_path_side"):
+            bg.paste(side1, (0, 1*scale), mask = side1)
+        else:
+            bg.paste(side1, mask = side1)
 
         return bg
 
