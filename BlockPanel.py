@@ -37,6 +37,7 @@ class BlockPanel(object):
         self.icons = icons # Icons is a dict of icons for the 3 buttons
         self.isLocked = False # Unused Rn. Plan to add texture changes when locked.
         self.isSearching = False
+        self.scale = 2 # Scale for the blocks to be drawn at (scale 1 = 64x64)
 
         self.nameFont = "Verdana 10 italic"
         self.nameColor = "white"
@@ -113,7 +114,7 @@ class BlockPanel(object):
             self.lockButton.lock()
             return "lock"
 
-    def draw(self, app, canvas, scale = 8):
+    def draw(self, app, canvas):
         if(self.isSearching): # When searching, the panel extends to meet with the search panel.
             y2 = self.y + self.height + 40
         else:
@@ -130,7 +131,7 @@ class BlockPanel(object):
                            font = self.nameFont,
                            fill = self.nameColor,
                            anchor = "nw")
-        self.block.draw(app, canvas, x + self.width/2, self.y + self.height/2, scale)
+        self.block.draw(app, canvas, x + self.width/2, self.y + self.height/2, self.scale)
         
         if(not self.isSearching):  # When searching, these buttons should not appear
             self.dragButton.draw(canvas, self.deltaX)

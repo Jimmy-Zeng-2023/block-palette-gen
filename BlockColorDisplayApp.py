@@ -41,7 +41,8 @@ class ColorDisplayApp(App):
         self.changeTexture()
     
     def changeTexture(self):
-        self.currentTexture = self.blocks[self.i].textures
+        self.currentTexture = self.blocks[self.i].texture
+
         self.colors = self.currentTexture.getcolors(maxcolors = 10**6)
         
         if(self.printBlockNames):
@@ -52,7 +53,7 @@ class ColorDisplayApp(App):
             for (count, color) in self.colors:
                 print(f"{color} with count {count}")
 
-        self.currentTexture = self.scaleImage(self.currentTexture, 20)
+        self.currentTexture = self.scaleImage(self.currentTexture, 3)
 
     def keyPressed(self, event):
         if(event.key == 'Right' and self.i < len(self.blocks) - 1):
@@ -75,7 +76,7 @@ class ColorDisplayApp(App):
                 print(name) 
 
     def redrawAll(self, canvas):
-        canvas.create_image(0,0, image =  ImageTk.PhotoImage(self.currentTexture), anchor = 'nw')
+        canvas.create_image(50,50, image = ImageTk.PhotoImage(self.currentTexture), anchor = 'nw')
 
         if(not isinstance(self.colors[0][1], tuple)):
             print("Error: not a tuple")

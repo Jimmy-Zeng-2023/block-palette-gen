@@ -51,7 +51,7 @@ class SearchPanel(object):
         self.startX = self.x + self.panelMargin
         self.startY = self.y + self.topMargin
     
-        self.scale = 4
+        self.scale = 1
         # Side length of each block
         self.cellWidth = (self.width - 2 * self.panelMargin) // self.cols
         self.cellHeight = (self.height - 2 * self.topMargin) // self.rows

@@ -36,7 +36,7 @@ class PresetPanel(object):
 
             self.color = "gray20" #SlateBlue4"
             self.color2 = "SlateBlue4"
-            self.scale = 5 # Scale for the blocks to be drawn at
+            self.scale = 1 # Scale for the blocks to be drawn at
             self.blockGap = 20
             self.textX = 10
             self.topMargin = 5

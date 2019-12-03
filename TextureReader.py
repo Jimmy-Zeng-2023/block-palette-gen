@@ -78,8 +78,9 @@ class TextureReader(object):
                 sideLength = texture.width
                 texture = texture.crop((0, 0, sideLength, sideLength))
                 colors, noise = self.getColorsAndNoise(texture)
+                newBlock = Block(name, colors, noise, texture)
 
-                return {name : Block(name, colors, noise, texture)}
+                return {name : newBlock}
             else:
                 return dict()
         else:

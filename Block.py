@@ -24,7 +24,100 @@ class Block(object):
         self.colors = colors # Color is a set of the most prominant colors
                              # Each color is a tuple of (R, G, B) or (R, G, B, A)
         self.noise = noise # Noise is a number 1-10 that classifies the level of noise
-        self.textures = textures # Texture is a list of image objects relating to the faces
+        
+        # Textures is an list of images corresponding to the top, left, and right faces
+        # self.texture stores the transformed cube image
+        self.texture = self.transformTo3D(textures)
+
+
+    def transformTo3D(self, textures):
+        scale = 2
+        
+        textures = textures.resize((16*scale, 16*scale))
+        side1 = textures
+        side2 = textures
+        side3 = textures
+
+        bgSize = (32*scale, 36*scale)
+        bg = Image.new('RGBA', bgSize, (0, 0, 0, 0))
+        
+        # Top Rect:
+        # Size = (x=32, y=16)
+        #
+        # To perform an Affine transformation, we need a 6-tuple
+        # Where every (x, y) in the result maps to the point in the original defined by:
+        # x = ax + by + c, y = dx + ey + f
+        #
+        # a = 1/2, b = 1, c = -8, e = 1, d = -1/2, f = 8
+        size = (32, 16)
+        size = (size[0] * scale, size[1] * scale)
+
+        data = (1/2, 1, -8*scale, -1/2, 1, 8*scale)
+        side1 = side1.transform(size, Image.AFFINE, data)
+
+        # Bottom-left Rect:
+        # Size = (x=16, y=32)
+        #
+        # a = 1, b = 0, c = 0, d = -1/2, e = 1, f = 0
+        size = (16, 28)
+        size = (size[0] * scale, size[1] * scale)
+
+        data = (1, 0, 0, -2/5, 4/5, 0)
+        side2 = side2.transform(size, Image.AFFINE, data)
+
+        # Bottom-right Rect:
+        # Size = (x=16, y=32)
+        #
+        # a = 1, b = 0, c = 0, d = 1/2, e = 1, f = 8  # Try adjusting e and f for ratio change
+        size = (16, 28)
+        size = (size[0] * scale, size[1] * scale)
+
+        data = (1, 0, 0, 2/5, 4/5, -(32/5)*scale)
+        side3 = side3.transform(size, Image.AFFINE, data)
+
+        '''# Makes all three sides transparent
+        self.clearBackground(side1)
+        self.clearBackground(side2)
+        self.clearBackground(side3)'''
+
+        # Applies a shade to side 2 and side 3 to better distinguish them
+        shade2 = Image.new('RGBA', side2.size, (0, 0, 0, 255))
+        alpha2 = side2.getchannel('A')
+        side2 = Image.blend(side2, shade2, 0.2)
+        side2.putalpha(alpha2)
+        
+        shade3 = Image.new('RGBA', side3.size, (0, 0, 0, 255))
+        alpha3 = side3.getchannel('A')
+        side3 = Image.blend(side3, shade3, 0.4)
+        side3.putalpha(alpha3)
+        
+        # Pastes the sides into the background
+        bg.paste(side2, (0, 8*scale), mask = side2)
+        bg.paste(side3, (16*scale, 8*scale), mask = side3)
+        bg.paste(side1, mask = side1)
+
+        #self.clearBackground(bg)
+
+        return bg
+
+
+    # Code from: 
+    # https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent
+    # with modifications.
+    def clearBackground(self, img, shadeAmt = 0):
+        # Takes an image and destructively changes all white pixels to transparent
+
+        data = img.getdata()
+
+        newData = []
+        for item in data:
+            if item[0] == 255 and item[1] == 255 and item[2] == 255 and item[3] == 255:
+                newData.append((255, 255, 255, 0))
+            #elif item[0] == 0 and item[1] == 0 and item[2] == 0:
+            #    newData.append((255, 255, 255, 0))
+            else:
+                newData.append(item)
+        img.putdata(newData)
 
     def __repr__(self):
         if(len(self.colors) > 3):
@@ -66,7 +159,28 @@ class Block(object):
 
     def draw(self, app, canvas, x, y, scale, anchor = 'center'):
         #Advanced: want to draw in 3D w/ 3 images
-        photoImage = self.getCachedPhotoImage(app, self.textures, scale)
-        texture = app.scaleImage(self.textures, scale)
+        photoImage = self.getCachedPhotoImage(app, self.texture, scale)
+        texture = app.scaleImage(self.texture, scale)
         canvas.create_image(x, y, image = photoImage,
                             anchor = anchor)
+
+
+        # Bottom-right Rect:
+        # Size = (x=16, y=32)
+        # x = ax + by + c, y = dx + ey + f
+        #
+        # a = 1, b = 0, c = 0, d = -1/2, e = 3/2, f = 8  # Try adjusting e and f for ratio change
+
+
+        # Bottom-left Rect:
+        # Size = (x=16, y=32)
+        #
+        # a = 1, b = 0, c = 0, d = 1/2, e = 3/2, f = 0
+        
+    
+        # Top Rect:
+        # Size = (x=32, y=16)
+        #
+        # a = 1, b = -1, c = 16, e = 1/2, d = 1/2, f = 0
+
+        # Overall size = (x=32, y=40), expanded to (40, 40)
