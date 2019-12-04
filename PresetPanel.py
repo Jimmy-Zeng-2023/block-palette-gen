@@ -38,7 +38,7 @@ class PresetPanel(object):
             self.color2 = "SlateBlue4"
             self.scale = 1 # Scale for the blocks to be drawn at
             self.blockGap = 20
-            self.textX = 10
+            self.textX = 20
             self.topMargin = 5
             self.blockX = 220
 
@@ -58,11 +58,11 @@ class PresetPanel(object):
         self.y = y # Sadly, the x and y do need to be stored for bound calculations 
         canvas.create_rectangle(x, y,
                                 x + self.width, y + self.height,
-                                fill = self.color,
+                                fill = self.color2,
                                 width = 0)
         canvas.create_rectangle(x + 5, y + 5,
                                 x + self.width - 10, y + self.height - 10,
-                                fill = self.color2,
+                                fill = self.color,
                                 width = 0)
 
         canvas.create_text(x + self.textX,
