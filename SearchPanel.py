@@ -148,6 +148,8 @@ class SearchPanel(object):
         userKey = key.lower().replace(' ', '') # Capitals and spaces don't matter
         if(userKey in self.simpleBlocks):
             return self.simpleBlocks[userKey]
+        else:
+            return "searchFailed" # Awk way to name it
 
     def makeSimpleBlocks(self):
         self.simpleBlocks = dict() # Names of the blocks are trimmed and made simpler

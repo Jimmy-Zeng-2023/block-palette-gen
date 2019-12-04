@@ -127,6 +127,8 @@ class GeneratorMode(Mode):
         self.searchPanel = SearchPanel(x, y, width, height, self.blocks, self.app.ui_images)
         
         self.searchingIndex = None # This is the block panel currently searching
+        self.searchFail = False
+        self.searchFailCounter = 0
 
     def createHelpPanel(self):   
         lockIcon =  self.app.ui_images["unlock"]
@@ -176,7 +178,12 @@ class GeneratorMode(Mode):
     def checkSearching(self, mouseX, mouseY):
         # Returns true when the search box has finished
         selectedBlock = self.searchPanel.checkButtonClick(self, mouseX, mouseY)
-        if(selectedBlock == None): return False
+        if(selectedBlock == "searchFailed"): 
+            self.searchFail = True
+            self.searchFailCounter += 3 * 20
+            return False
+        elif(selectedBlock == None):
+            return False
         elif(selectedBlock == "exit"):
             self.toggleSearchPanel()
             self.searchingIndex = None
@@ -184,7 +191,7 @@ class GeneratorMode(Mode):
         else:
             # A search has completed
             assert(isinstance(selectedBlock, Block))
-            print(f"Detected click on {selectedBlock}")
+            #print(f"Detected click on {selectedBlock}")
 
             self.panels[self.searchingIndex].setBlock(selectedBlock)
             self.app.state.blocks[self.searchingIndex] = selectedBlock
@@ -222,7 +229,7 @@ class GeneratorMode(Mode):
                     self.app.state.locked.add(i)
                 else:
                     self.app.state.locked.remove(i)
-                print(f"New locked indices = {self.app.state.locked}")
+                #print(f"New locked indices = {self.app.state.locked}")
 
             elif(panel.checkInBounds(mouseX, mouseY) == "search"):
                 self.searchingIndex = i
@@ -245,8 +252,14 @@ class GeneratorMode(Mode):
 #     Top Level Controllers      #
 ##################################
 
-    def timerFired(self): pass
+    def timerFired(self):
         # Used for animations
+
+        # Counts down from 100 ticks to 0 ticks, then swaps away the message
+        if self.searchFailCounter > 0:
+            self.searchFailCounter -= 1
+        else:
+            self.searchFail = False
 
     def keyPressed(self, event):
         if(event.key == 'r'):
@@ -363,6 +376,14 @@ class GeneratorMode(Mode):
 
     def drawSearchPanel(self, canvas):
         self.searchPanel.draw(self, canvas)
+
+        if(self.searchFail):
+            canvas.create_text(self.width//2,
+                               200,
+                               text = "Sorry! We couldn't find that block. :(",
+                               font = self.ui["largeFont"],
+                               fill = "red2",
+                               anchor = "n")
 
     def redrawAll(self, canvas):
         # Background

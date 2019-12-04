@@ -72,7 +72,7 @@ class BlockPaletteGenerator(ModalApp):
         self.generator = GeneratorMode()
         self.presets = PresetMode()
         self.setActiveMode(self.generator)
-        self.timerDelay = 1000
+        self.timerDelay = 50
 
     def createReaderAndGenerator(self):
         path = self.paths["textures"]
