@@ -19,7 +19,7 @@ import random, math, copy, string, time, os
 # Its purpose is mainly to serve as a data structure.
 #################################################
 class Block(object):
-    def __init__(self, name, colors, noise, textures):
+    def __init__(self, name, colors, noise, textures, weight = 4):
         self.name = name
         self.colors = colors # Color is a set of the most prominant colors
                              # Each color is a tuple of (R, G, B) or (R, G, B, A)
@@ -28,6 +28,8 @@ class Block(object):
         # Textures is an list of images corresponding to the top, left, and right faces
         # self.texture stores the transformed cube image
         self.texture = self.transformTo3D(textures)
+
+        self.weight = weight # Lower weight means the block shows up with elss frequency
 
 
     def transformTo3D(self, textures):
@@ -97,7 +99,7 @@ class Block(object):
         
         # TODO: This will be just grass path
         if(self.name == "grass_path_side"):
-            bg.paste(side1, (0, 1*scale), mask = side1)
+            bg.paste(side1, (0, 1*scale - 1), mask = side1)
         else:
             bg.paste(side1, mask = side1)
 
@@ -166,24 +168,3 @@ class Block(object):
         texture = app.scaleImage(self.texture, scale)
         canvas.create_image(x, y, image = photoImage,
                             anchor = anchor)
-
-
-        # Bottom-right Rect:
-        # Size = (x=16, y=32)
-        # x = ax + by + c, y = dx + ey + f
-        #
-        # a = 1, b = 0, c = 0, d = -1/2, e = 3/2, f = 8  # Try adjusting e and f for ratio change
-
-
-        # Bottom-left Rect:
-        # Size = (x=16, y=32)
-        #
-        # a = 1, b = 0, c = 0, d = 1/2, e = 3/2, f = 0
-        
-    
-        # Top Rect:
-        # Size = (x=32, y=16)
-        #
-        # a = 1, b = -1, c = 16, e = 1/2, d = 1/2, f = 0
-
-        # Overall size = (x=32, y=40), expanded to (40, 40)

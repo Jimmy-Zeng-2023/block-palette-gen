@@ -53,7 +53,7 @@ class PresetMode(Mode):
             "Futuristic" : ["quartz_block_top", "quartz_pillar", "cyan_terracotta", "blue_terracotta", "red_terracotta"],
             "Medieval" : ["spruce_log", "spruce_planks", "oak_planks", "cobblestone", "stone_bricks"],
             "Atlantian" : ["prismarine", "sea_lantern", "dark_prismarine", "stripped_birch_log", "brain_coral_block"],
-            "Desert" : ["sandstone", "cut_sandstone", "terracotta", "chiseled_red_sandstone", "spruce_log"],
+            "Desert" : ["sandstone", "cut_sandstone", "chiseled_sandstone", "terracotta", "spruce_log"],
             "Arctic" : ["packed_ice", "blue_ice", "snow", "cobblestone", "stone_bricks"]
         }
 

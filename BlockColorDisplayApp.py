@@ -29,7 +29,8 @@ def rgbString(red, green, blue):
 #################################################
 class ColorDisplayApp(App):
     def appStarted(self):
-        path = "Block-textures-vanilla-1.14.4"
+        #path = "Block-textures-vanilla-1.14.4"
+        path = "Bare-bones-textures"
         self.reader = TextureReader(100, path)
         blockDict = self.reader.parseFiles(path)
         self.blocks = list(blockDict.values())
@@ -64,14 +65,14 @@ class ColorDisplayApp(App):
             self.changeTexture()
         elif(event.key == "f"):
             name = self.blocks[self.i].name
-            print(f"{name} blacklisted!")
+            print(f"{name} stoed!")
             self.unwantedBlocks.append(name)
         elif(event.key == "k"):
-            print("Blacklist Undoed!")
+            print("List Undoed!")
             self.unwantedBlocks.pop()
         elif(event.key == "r"):
             print("=======================================")
-            print("Here's the list of blacklisted blocks:")
+            print("Here's the list of blocks to change:")
             for name in self.unwantedBlocks:
                 print(name) 
 

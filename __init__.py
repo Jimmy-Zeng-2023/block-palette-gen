@@ -13,7 +13,6 @@ from cmu_112_graphics import * # From Class Notes: Animation Part 2
 from tkinter import *
 from PIL import Image
 import random, math, copy, string, time, os
-from tkinter.font import *
 
 # My other classes
 from Block import *
@@ -44,7 +43,10 @@ class BlockPaletteGenerator(ModalApp):
 
         # Edit links to UI images here!!!
         self.paths = {
-            "textures" : "Block-textures-vanilla-1.14.4",
+            # Block-textures-vanilla-1.14.4
+            # Sortex-Fanver-textures
+            # Bare-bones-textures
+            "textures" : "Block-textures-vanilla-1.14.4", # Change this to change the texture pack path
             "Bg_Normal" : "ui-images/Bg_normal_2.png",
             "Bg_Alternate" : "ui-images/Bg_alternate_2.png",
             "search" : "ui-images/search-icon.png",
@@ -77,7 +79,7 @@ class BlockPaletteGenerator(ModalApp):
         self.myReader = TextureReader(50, path)
         self.blocks = self.myReader.parseFiles(path)
         print("Texture Loading Complete!")
-        self.myGen = BlockGenerator(self.blocks, noiseEpsilon = 2)
+        self.myGen = BlockGenerator(self.blocks, noiseEpsilon = 1)
         self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
 
     def createInactiveIcons(self, key):

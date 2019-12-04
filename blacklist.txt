@@ -331,5 +331,8 @@ smoker_front_on
 smoker_side
 smoker_top
 tnt_bottom
-tnt_side
-tnt_top
+
+barrel_bottom
+dried_kelp_bottom
+
+grass1

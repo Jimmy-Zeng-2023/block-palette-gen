@@ -95,9 +95,9 @@ class TextureReader(object):
         #Given the path, open the image via PIL and derive the block's main colors
         #(colors too close together are ignored)
 
-        colorLst = texture.getcolors() # Gets a list of all the colors
+        colorLst = texture.getcolors(maxcolors = 10**6) # Gets a list of all the colors
         color, noise = self.getPrimaryColor(colorLst)
-        return color, noise    
+        return color, noise
 
     def getPrimaryColor(self, colorLst):
         # TODO: To be able to get the top 2 / 3 colors
@@ -107,7 +107,7 @@ class TextureReader(object):
         mergedColors = dict()
 
         # Reverse loops through the list (greatest to least)
-        for i in range(len(sortedColorLst) - 1, 0, -1):
+        for i in range(len(sortedColorLst) - 1, -1, -1):
             mergeCount = sortedColorLst[i][0]
             mergeColor = sortedColorLst[i][1]
             colorMerged = False

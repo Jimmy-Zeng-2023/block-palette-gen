@@ -62,7 +62,7 @@ class BlockGenerator(object):
                                   0,
                                   Image.new("RGBA", (1, 1)))
         # Toggle this to continueously print the state every generation
-        self.printState = False
+        self.printState = True
 
     # Generates a new State 
     def generate(self, state):
