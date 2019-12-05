@@ -30,7 +30,7 @@ from PresetPanel import *
 # THIS IS THE MAIN FILE TO BE RUN!
 #
 #
-#              THE MODAL APP
+#             -= THE MODAL APP =-
 #
 # The ModalApp ties the two modes together, and also initializes some important
 # dictionaries, such as the paths to the files.
@@ -43,6 +43,7 @@ class BlockPaletteGenerator(ModalApp):
 
         # Edit links to UI images here!!!
         self.paths = {
+            # TBD: Extra texture packs
             # Block-textures-vanilla-1.14.4
             # Sortex-Fanver-textures
             # Bare-bones-textures
@@ -59,6 +60,26 @@ class BlockPaletteGenerator(ModalApp):
             "rightButton" : "ui-images/RightArrow.png"
         }
 
+        self.createIcons()
+        self.createReaderAndGenerator()
+
+        self.generator = GeneratorMode()
+        self.presets = PresetMode()
+        self.setActiveMode(self.generator)
+        self.timerDelay = 50
+
+    def createReaderAndGenerator(self):
+        # Helper of appStarted. Creates the reader and generator inside the modal app itself
+        path = self.paths["textures"]
+        self.myReader = TextureReader(50, path)
+        self.blocks = self.myReader.parseFiles(path)
+        print("Texture Loading Complete!")
+        self.myGen = BlockGenerator(self.blocks, noiseEpsilon = 1)
+        self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
+
+    def createIcons(self):
+        # Uses self.paths to create a new dictionary for the button images
+        
         self.ui_images = dict() # Creates a dictionary of the UI images
         for key in self.paths:
             if(key == "textures"): continue
@@ -68,39 +89,24 @@ class BlockPaletteGenerator(ModalApp):
             else:
                 self.ui_images[key] = Image.open(self.paths[key]).convert("RGBA")
 
-        self.createReaderAndGenerator()
-        self.generator = GeneratorMode()
-        self.presets = PresetMode()
-        self.setActiveMode(self.generator)
-        self.timerDelay = 50
-
-    def createReaderAndGenerator(self):
-        path = self.paths["textures"]
-        self.myReader = TextureReader(50, path)
-        self.blocks = self.myReader.parseFiles(path)
-        print("Texture Loading Complete!")
-        self.myGen = BlockGenerator(self.blocks, noiseEpsilon = 1)
-        self.state = State([self.blocks["acacia_leaves"] for _ in range(5)])
-
     def createInactiveIcons(self, key):
+        # A helper method for createIcons()
+        # Generate greyed out copies to be inactive icons.
+
         activeIcon = Image.open(self.paths[key]).convert("RGBA")
+        activeIcon = self.scaleImage(activeIcon, 2)
+        self.ui_images[key] = activeIcon
 
         if(key == "lock"):
         # In the case of lock, there is no inactive image, so the process terminates early
-            activeIcon = self.scaleImage(activeIcon, 2)
             self.ui_images[key] = activeIcon
-            return None
-        
+            return
+
+        # Overlays a color to create the icons
         colorMask = Image.new('RGBA', (activeIcon.width, activeIcon.height), 
                               color = "gray")
         inactiveIcon = Image.composite(colorMask, activeIcon, activeIcon)
-        
-        activeIcon = self.scaleImage(activeIcon, 2)
-        inactiveIcon = self.scaleImage(inactiveIcon, 2)
-        
         newKey = "inactive-" + key
-
-        self.ui_images[key] = activeIcon
         self.ui_images[newKey] = inactiveIcon
 
 def main():

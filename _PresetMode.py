@@ -36,7 +36,6 @@ from PresetPanel import *
 #################################################
 
 class PresetMode(Mode):
-    # Changes the state
     def appStarted(self):
         
         self.ui = {
@@ -57,6 +56,7 @@ class PresetMode(Mode):
             "Arctic" : ["packed_ice", "blue_ice", "snow", "cobblestone", "stone_bricks"]
         }
 
+        # Creating the UI elements
         self.setBackground()
         self.createButtons()
         self.createPresetPanels()
@@ -70,6 +70,7 @@ class PresetMode(Mode):
         self.bgMiddle = self.background.crop((480, 0, 1400, 1009))
 
     def createButtons(self):
+        # Creates the top level buttons
         x, y, width, height = self.ui["genModeButton"]
         self.genModeButton = ImageButton(x, y, width, height)
         
@@ -77,17 +78,16 @@ class PresetMode(Mode):
         self.presetButton = ImageButton(x, y, width, height)
 
     def createPresetPanels(self):
-        # "Medieval" : [acacia_leaves, oak_log...]
+        # Creates the main panels to hold the presets
         presetsDict = self.presetsDict
         self.presetPanels = []
-
         
         leftMargin, topMargin, panelHeight, gap = self.ui["margins"]
         panelWidth = self.width - 2 * leftMargin
 
         for name in presetsDict:
-            blockNames = presetsDict[name] # List of strings
-            blocks = self.search(blockNames)
+            blockNames = presetsDict[name] # List of strings representing the buttons
+            blocks = self.search(blockNames) # Looks up the block objects by accessing the main app
             newPanel = PresetPanel(panelWidth, panelHeight, blocks, name)
             self.presetPanels.append(newPanel)
 
@@ -103,27 +103,37 @@ class PresetMode(Mode):
 ##################################
 
     def changeMode(self):
+        # Changes back to the generator
         self.app.setActiveMode(self.app.generator)
         self.app.sizeChanged()
     
     def checkButtons(self, mouseX, mouseY):
+        # Checks if the top level buttons are clicked
         if(self.genModeButton.checkInBounds(mouseX, mouseY)):
             self.changeMode()
         elif(self.presetButton.checkInBounds(mouseX, mouseY)):
             pass
 
     def checkPanels(self, mouseX, mouseY):
+        # Checks if the preset panels are clicked
         for presetPanel in self.presetPanels:
             selected = presetPanel.checkInBounds(mouseX, mouseY)
             if(selected != None):
                 self.updateState(selected)
 
     def updateState(self, blocks):
+        # When a preset panel is clicked, update the main app w/ the appropriate blocks
+
         self.app.state.blocks = blocks
         #self.app.state.locked = {0, 1, 2, 3, 4}
         self.app.generator.updatePanels()
         self.app.generator.endSearch()
         self.app.setActiveMode(self.app.generator)
+
+    def sizeChanged(self):
+        # Resizes the UI
+        if(self.width >= 660):
+            self.createPresetPanels()
         
 ##################################
 #     Top Level Controllers      #

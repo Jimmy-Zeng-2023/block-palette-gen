@@ -21,7 +21,7 @@ from Buttons import *
 from TextureReader import *
 
 #################################################
-# The PresetPanel Stores 5 blocks made as a preset to load into the generator
+# The PresetPanel stores 5 blocks made as a preset to load into the generator
 #################################################
 
 class PresetPanel(object):
@@ -45,6 +45,7 @@ class PresetPanel(object):
             #self.convertedName = TextureReader.convertBlockNames(self.block.name)
     
     def checkInBounds(self, mouseX, mouseY):
+        # Checks if it has been clicked on
         if(mouseX > self.x and mouseX < self.x + self.width and
            mouseY > self.y and mouseY < self.y + self.height):
             return self.blocks

@@ -33,7 +33,11 @@ class Block(object):
 
 
     def transformTo3D(self, textures):
-        scale = 2
+        # Uses affine transformation (via PIL.Image.transform) to make pseudo-3D images
+        # from 2D textures to be displayed in the App
+
+        scale = 2 # Size by which to scale the cubes
+                  # scale = 1 will produce a 40x40 image
         
         textures = textures.resize((16*scale, 16*scale))
         side1 = textures
@@ -46,8 +50,9 @@ class Block(object):
         # Top Rect:
         # Size = (x=32, y=16)
         #
-        # To perform an Affine transformation, we need a 6-tuple
-        # Where every (x, y) in the result maps to the point in the original defined by:
+        # To perform an Affine transformation, we need a 6-tuple such that every
+        # coordinate (x, y) in the *result* maps to the point in the *original*
+        # defined by:
         # x = ax + by + c, y = dx + ey + f
         #
         # a = 1/2, b = 1, c = -8, e = 1, d = -1/2, f = 8
@@ -61,6 +66,7 @@ class Block(object):
         # Size = (x=16, y=32)
         #
         # a = 1, b = 0, c = 0, d = -1/2, e = 1, f = 0
+        # Adjust d and f to change the B/H ratio
         size = (16, 28)
         size = (size[0] * scale, size[1] * scale)
 
@@ -70,7 +76,7 @@ class Block(object):
         # Bottom-right Rect:
         # Size = (x=16, y=32)
         #
-        # a = 1, b = 0, c = 0, d = 1/2, e = 1, f = 8  # Try adjusting e and f for ratio change
+        # a = 1, b = 0, c = 0, d = 1/2, e = 1, f = 8
         size = (16, 28)
         size = (size[0] * scale, size[1] * scale)
 
@@ -97,14 +103,13 @@ class Block(object):
         bg.paste(side2, (0, 8*scale), mask = side2)
         bg.paste(side3, (16*scale, 8*scale), mask = side3)
         
-        # TODO: This will be just grass path
+        # TODO: The block should be named just "grass_path"
         if(self.name == "grass_path_side"):
-            bg.paste(side1, (0, 1*scale - 1), mask = side1)
+            bg.paste(side1, (0, 1*scale + 1), mask = side1)
         else:
             bg.paste(side1, mask = side1)
 
         return bg
-
 
     # Code from: 
     # https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent
@@ -124,6 +129,7 @@ class Block(object):
                 newData.append(item)
         img.putdata(newData)
 
+    # Some "magic" functions defined for ease of use
     def __repr__(self):
         if(len(self.colors) > 3):
             return f"{self.name} block. Noise factor = {self.noise}.\n Colors = {self.colors[:3]} and {len(self.colors) - 3} more..."
@@ -161,9 +167,8 @@ class Block(object):
 
         return image.cached[scale]
 
-
     def draw(self, app, canvas, x, y, scale, anchor = 'center'):
-        #Advanced: want to draw in 3D w/ 3 images
+        # Draws the block, in 3D!
         photoImage = self.getCachedPhotoImage(app, self.texture, scale)
         texture = app.scaleImage(self.texture, scale)
         canvas.create_image(x, y, image = photoImage,

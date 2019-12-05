@@ -31,8 +31,8 @@ class TextureReader(object):
         # Initializes the error epsilon, and texture pack's path
         self.colorEpsilon = colorEpsilon
         self.path = path
-        self.blacklistPath = "blacklist.txt"
-        self.getBlackList()
+        self.whitelistPath = "whitelist.txt"
+        self.getWhitelist()
 
         # For greenery and foilage. See addGreenLayer()
         
@@ -49,11 +49,12 @@ class TextureReader(object):
             "acacia_leaves" : (101/181, 95/181, 25/181)
         }
 
-    def getBlackList(self):
-        self.blacklist = set()
-        blacklistStr = readFile(self.blacklistPath)
-        for name in blacklistStr.splitlines():
-            self.blacklist.add(name)
+    def getWhitelist(self):
+        # Reads in the whitelist
+        self.whitelist = set()
+        whitelistStr = readFile(self.whitelistPath)
+        for name in whitelistStr.splitlines():
+            self.whitelist.add(name)
 
     def parseFiles(self, path):
         # Similar to the listFiles() function from Class Notes: Recursion Part 2
@@ -66,7 +67,8 @@ class TextureReader(object):
             name = splitFileName[0]
             extension = splitFileName[-1]
             # We dont want .mcMeta files (yet), those are for animated textures
-            if(extension == 'png' and name not in self.blacklist):
+            if(name in self.whitelist and
+               extension == 'png'):
                 
                 if(name in self.foilage):
                     # Vegetation blocks (leaves and grass) are stored as grayscale files
@@ -88,7 +90,6 @@ class TextureReader(object):
             for fileName in os.listdir(path):
                 subBlocks = self.parseFiles(path + os.sep + fileName)
                 blocks.update(subBlocks)
-                #blocks += subBlocks
             return blocks
 
     def getColorsAndNoise(self, texture):
@@ -142,6 +143,7 @@ class TextureReader(object):
         return self.getMode(mergedColors), noise
     
     def getMode(self, mergedColors):
+        # Find the color with the highest number of combined counts
         highest = 0
         highestColor = None 
         for key in mergedColors:

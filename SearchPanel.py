@@ -60,21 +60,24 @@ class SearchPanel(object):
         self.makeSimpleBlocks() # A dictionary with easier to spell names
 
     def createButtons(self):
-        # 3 buttons, left, right, and search
+        # Create 3 buttons, left, right, and search
         side = 32 # side length of each button
 
+        # The left button moves back a screen
         x = self.x + self.buttonMargin
         y = self.y + self.height // 2
         inactive = self.icons["inactive-leftButton"]
         active = self.icons["leftButton"]
         self.leftButton = ImageButton(x, y, side, side, inactive, active)
         
+        # The right button advances a screen (27 more blocks)
         x = self.x + self.width - self.buttonMargin - 32
         y = self.y + self.height // 2
         inactive = self.icons["inactive-rightButton"]
         active = self.icons["rightButton"]
         self.rightButton = ImageButton(x, y, side, side, inactive, active)
 
+        # The search button allows a manual input
         x = self.x + self.buttonMargin
         y = self.y + self.topMargin
         inactive = self.icons["inactive-search"]
@@ -122,6 +125,7 @@ class SearchPanel(object):
                 y > y1 and y < y2)
 
     def getRowCol(self, x, y):
+        # View -> Model
         col = x // self.cellWidth
         row = y // self.cellHeight
         return (row, col) 
@@ -145,14 +149,21 @@ class SearchPanel(object):
     def search(self, app):
         # Used for the search button
         key = app.getUserInput("Input the name of the block:")
+
+        if(not isinstance(key, str)): return "searchFailed"
+
         userKey = key.lower().replace(' ', '') # Capitals and spaces don't matter
+        
         if(userKey in self.simpleBlocks):
             return self.simpleBlocks[userKey]
         else:
             return "searchFailed" # Awk way to name it
 
     def makeSimpleBlocks(self):
-        self.simpleBlocks = dict() # Names of the blocks are trimmed and made simpler
+        # Trims the names of the blocks so the user has an easier time entering them
+        # "oak_wood_top" -> "oakwoodtop"
+        # User can input "oak wood top" or "OakWoodTop"
+        self.simpleBlocks = dict()
         for key in self.blocks:
             block = self.blocks[key]
             convertedKey = key.lower()
@@ -194,6 +205,7 @@ class SearchPanel(object):
         self.drawBlocks(app, canvas)
 
     def drawBlocks(self, app, canvas):
+        # Draws the array of blocks held within the panel
         for i in range(self.start, self.start + self.blocksPerPage):
             row = (i - self.start) // self.cols
             col = (i - self.start) % self.cols

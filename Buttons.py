@@ -34,6 +34,7 @@ class ImageButton(object):
         self.height = height
         self.sprite = sprite
         
+        # A button can have 0 sprites, only active, or both active and inactive (regular) sprites
         if(activeSprite != None):
             #self.activeSprite = activeSprite.resize(ratio)
             self.activeSprite = activeSprite
@@ -41,6 +42,7 @@ class ImageButton(object):
             self.activeSprite = self.sprite
 
     def draw(self, canvas, dragDelta = 0):
+        # Draws the sprite(s) (if possible)
         if(self.sprite == None):
             return
         else:
@@ -55,22 +57,25 @@ class ImageButton(object):
                             activeimage = ImageTk.PhotoImage(self.activeSprite))
         
     def checkInBounds(self, mouseX, mouseY):
+        # Main function of the button: checking if it has been clicked on
         return (mouseX > self.x and mouseX < self.x + self.width and
                 mouseY > self.y and mouseY < self.y + self.height)
 
     def setSprites(self, inactive, active):
+        # Allows other functions to override the initial sprites
         self.sprite = inactive
         self.activeSprite = active
         
 
 class LockButton(ImageButton):
+    # The lock button can be toggled on and off (locked and unlocked)
     def __init__(self, x, y, width, height,
                  lockedActive,
                  unlockedInactive, unlockedActive):
                  
-        self.lockedActive     = lockedActive # Locked -> Shut lock. Displayed when block is locked.
+        self.lockedActive     = lockedActive # Locked -> Shackle down. Displayed when block is locked.
                                              # When locked, always white.
-        self.unlockedInactive = unlockedInactive # Unlocked -> Open lock. Displayed when block is not locked.
+        self.unlockedInactive = unlockedInactive # Unlocked -> Shackle lifed. Displayed when block is not locked.
         self.unlockedActive   = unlockedActive
 
         self.isLocked = False # If locked, the lock button should appear.
@@ -79,6 +84,7 @@ class LockButton(ImageButton):
         super().__init__(x, y, width, height, self.unlockedInactive, self.unlockedActive)
     
     def lock(self, forceLock = False):
+        # Swaps between the two states
         self.isLocked = not self.isLocked
 
         if(forceLock): 

@@ -29,12 +29,10 @@ def rgbString(red, green, blue):
 #################################################
 
 class State(object):
+    # Stores 5 blocks to be displayed
     def __init__(self, blocks, locked = set()):
         self.blocks = blocks # List of blocks
         self.locked = locked # set of indices locked currently
-
-    def __iter__(self):
-        return tuple(self.blocks)
 
     def __str__(self):
         toPrint = ""
@@ -53,7 +51,7 @@ class State(object):
 # a base block. This is the key to the palette generator.
 #################################################
 class BlockGenerator(object):
-    # This function is responsible for generating the blocks
+    # This object is responsible for generating the blocks
     def __init__(self, blocks, noiseEpsilon):
         self.blocks = blocks
         self.noiseEpsilon = noiseEpsilon
@@ -64,8 +62,8 @@ class BlockGenerator(object):
         # Toggle this to continueously print the state every generation
         self.printState = True
 
-    # Generates a new State 
     def generate(self, state):
+        # Generates a new State
         newBlocks = []
         nToGen = 0
         locked = state.locked
@@ -97,6 +95,7 @@ class BlockGenerator(object):
         return result
 
     def generateRandomBlock(self, state, newBlocks):
+        # If no blocks are locked, start off with a completely random block
         randColor = [random.randint(1,255) for _ in range(3)]
         randNoise = random.randint(1,40)
         return self.findBlockFromColor(state, newBlocks, randColor, randNoise)
@@ -184,8 +183,6 @@ class BlockGenerator(object):
                 newElement = 0
             lowerColor.append(newElement)'''
         return tuple(higherColor)
-        
-    def findTriadics(self): pass
 
     # Given a color and a noise, finds the block closest to that color within acceptable noise
     

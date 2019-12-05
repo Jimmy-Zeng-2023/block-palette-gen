@@ -47,9 +47,11 @@ class BlockPanel(object):
         self.createButtons()
 
     def setDeltaGrid(self, amt):
+        # Used in dragging: deltaGrid allows snapping of panels to set locations
         self.deltaGrid = amt
 
     def incDelta(self, otherPanelsX, minX, maxX):
+        # Used in dragging: Moves the panel to the right (but only visually)
         self.deltaX += self.deltaGrid
         newX = self.x + self.deltaX 
         if(newX in otherPanelsX or
@@ -58,6 +60,7 @@ class BlockPanel(object):
            self.deltaX -= self.deltaGrid
 
     def decDelta(self, otherPanelsX, minX, maxX):
+        # Used in dragging: Moves the panel to the left (but only visually)
         self.deltaX -= self.deltaGrid
         newX = self.x + self.deltaX
         #print(f"newX = {newX}, otherpanels = {otherPanelsX}")
@@ -68,10 +71,12 @@ class BlockPanel(object):
            #print("Block already in place!")
 
     def shiftInSteps(self):
+        # Used in dragging: Allows snapping
         numShifts = (self.deltaX + self.width//2) // self.deltaGrid
         self.deltaX = numShifts * self.deltaGrid    
 
     def lockInDelta(self):
+        # Used in dragging: Changes the "visual" shifting to actual x changes
         self.x += self.deltaX
         self.lockButton.x += self.deltaX
         self.dragButton.x += self.deltaX
@@ -79,6 +84,8 @@ class BlockPanel(object):
         self.deltaX = 0
 
     def createButtons(self):
+        # Creates 3 buttons for each button
+
         side = 32 # The side length of each button
         y = self.y + self.height + self.margins * 2
         x = self.x + self.width - side
@@ -101,8 +108,9 @@ class BlockPanel(object):
         lock = self.icons["lock"]
         self.lockButton = LockButton(x, y, side, side, lock, inactiveUnlock, activeUnlock)
     
-    # Determines which button has been clicked
-    def checkInBounds(self, mouseX, mouseY):
+    def checkInBounds(self, mouseX, mouseY):        
+        # Determines which button has been clicked
+
         if(self.isSearching): return
         # When searching, buttons do not function
         if(self.dragButton.checkInBounds(mouseX, mouseY)):
@@ -115,6 +123,8 @@ class BlockPanel(object):
             return "lock"
 
     def draw(self, app, canvas):
+        # Draws the panel and 3 buttons
+
         if(self.isSearching): # When searching, the panel extends to meet with the search panel.
             y2 = self.y + self.height + 40
         else:
@@ -122,6 +132,7 @@ class BlockPanel(object):
 
         x = self.x + self.deltaX
 
+        # Drawing the panel itself
         canvas.create_rectangle(x, self.y,
                                 x + self.width, y2,
                                 width = 0,
@@ -132,13 +143,15 @@ class BlockPanel(object):
                            fill = self.nameColor,
                            anchor = "nw")
         self.block.draw(app, canvas, x + self.width/2, self.y + self.height/2, self.scale)
-        
+
+        # Drawing buttons        
         if(not self.isSearching):  # When searching, these buttons should not appear
             self.dragButton.draw(canvas, self.deltaX)
             self.searchButton.draw(canvas, self.deltaX)
             self.lockButton.draw(canvas, self.deltaX)
 
     def setBlock(self, block):
+        # Allows other functions to set the block the panel is holding
         self.block = block
         self.convertedName = TextureReader.convertBlockNames(self.block.name)
 
